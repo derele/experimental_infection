@@ -83,7 +83,7 @@ SU <- rbind(SU, cbind(E[E$A.No=="AJ/T-4",], prepsex="female",
 ## AJ/T M
 
 SU <- rbind(SU, cbind(E[E$A.No=="AJ/T-25",], prepsex="male",
-                     prepnum=4, prepconc=3.02))
+                     prepnum=5, prepconc=4.05))
 
 SU <- rbind(SU, cbind(E[E$A.No=="AJ/T-19",], prepsex="male",
                      prepnum=7, prepconc=3.5))
