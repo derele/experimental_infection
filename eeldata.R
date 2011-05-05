@@ -1,5 +1,9 @@
 #Emanuel Heitilinger Basic analysis of experimental infections 
+<<<<<<< HEAD
 EA <- read.delim("/home/ele/Documents/sampling/AAL_SCHL_2.csv", header=TRUE, sep=",", as.is=TRUE)
+=======
+EA <- read.delim("AAL_SCHL_EH.csv", header=TRUE, sep=",", as.is=TRUE)
+>>>>>>> 15601f62156ee40eadeec6d239a7dbf8bcb602cb
 
 facs <- c("A.No.", "A.spec", "L.population", "Dpi","tank","L2")
 measure <- c("length", "weight")
@@ -75,6 +79,10 @@ prep <- rbind(prep,
               AA.T.F[AA.T.F$intensity==ME,]
               [sample(1:nrow(AA.T.F[AA.T.F$intensity==ME,]),1),])
 t(prep[nrow(prep),])
+<<<<<<< HEAD
+=======
+#AA/T-1 two females
+>>>>>>> 15601f62156ee40eadeec6d239a7dbf8bcb602cb
 
 MAX <- max(AA.T.F$intensity)
 prep <- rbind(prep,
@@ -232,4 +240,3 @@ prep <- rbind(prep, AA.R.M[AA.R.M$A.No.=="AA/R-3"|
                            AA.R.M$A.No.=="AA/R-11",])
 
 
-## Just the ones with the highest amount of RNA submitted!
