@@ -6,8 +6,9 @@ SAMT=/home/ele/tools/samtools/samtools
 
 # ------------- the files that should be mapped     --------------------
 
-## find .. -name "*.solfastq.gz" | parallel "$BWA aln db_assembly/fullest_assembly.fasta {} > {}.sai";
+find .. -name "*.solfastq.gz" | parallel "gunzip -c {} | /home/ele/tools/fq_all2std.pl sol2std > {}.fastq";
 
+find .. -name "*.fastq" | parallel "$BWA aln db_assembly/fullest_assembly.fasta {} > {}.sai";
 
 function exitOnError
   {
@@ -18,9 +19,9 @@ function exitOnError
   fi
   }
 
-SA=($(find .. -name "*.solfastq.gz.sai" | tr ' ' '\n' | sort -r));
+SA=($(find .. -name "*.fastq.sai" | tr ' ' '\n' | sort -r));
 
-FA=($(find .. -name "*.solfastq.gz" | tr ' ' '\n' | sort -r));
+FA=($(find .. -name "*.fastq" | tr ' ' '\n' | sort -r));
 
 for ((i=0; i< ${#SA[*]}; i=i+4));
 do 
@@ -35,3 +36,6 @@ $BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i+2]} ${SA[$i+3]} ${FA[$i+2]
 
 done;
 
+
+## indes all the created files
+find -name "*.bam" | parallel /home/ele/tools/samtools/samtools index; exitOnError "index" 
