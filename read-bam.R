@@ -58,68 +58,70 @@ pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" 
 
 ## Male/Female
 
-cds <- newCountDataSet(counts.frame, sex.conds)
-cds <- estimateSizeFactors(cds)
-cds <- estimateVarianceFunctions(cds)
-res <- nbinomTest(cds, "male", "female")
+cds.mf <- newCountDataSet(counts.frame, sex.conds)
+cds.mf <- estimateSizeFactors(cds.mf)
+cds.mf <- estimateVarianceFunctions(cds.mf)
+res.mf <- nbinomTest(cds.mf, "male", "female")
 
-vsd <- getVarianceStabilizedData( cds )
-dists <- dist( t( vsd ) )
+vsd.mf <- getVarianceStabilizedData( cds.mf )
+dists <- dist( t( vsd.mf ) )
 idists <- as.matrix(dists)
 
 ## check that m/f are clustering, etc...
 heatmap (idists , symm=TRUE, margins = c (7,7))
 
-scvPlot(cds)
+scvPlot(cds.mf)
 
-residualsEcdfPlot( cds, "male" )
-residualsEcdfPlot( cds, "female" )
+residualsEcdfPlot( cds.mf, "male" )
+residualsEcdfPlot( cds.mf, "female" )
 
 plot( 
-     res$baseMean, 
-     res$log2FoldChange, 
+     res.mf$baseMean, 
+     res.mf$log2FoldChange, 
      log="x", pch=20, cex=.4, 
-     col = ifelse( res$padj < .1, "red", "black" ),
+     col = ifelse( res.mf$padj < .1, "red", "black" ),
      main="My data")
 
-## sig <- res[res$padj < .01 & !is.na(res$padj),"id"]
+sig.mf <- res.mf[res.mf$padj < .1 & !is.na(res.mf$padj),"id"]
 
 ## Eel
 
-cds <- newCountDataSet(counts.frame, eel.conds)
-cds <- estimateSizeFactors(cds)
-cds <- estimateVarianceFunctions(cds)
-res <- nbinomTest(cds, "Aa", "Aj")
+cds.eel <- newCountDataSet(counts.frame, eel.conds)
+cds.eel <- estimateSizeFactors(cds.eel)
+cds.eel <- estimateVarianceFunctions(cds.eel)
+res.eel <- nbinomTest(cds.eel, "Aa", "Aj")
 
-scvPlot(cds)
+scvPlot(cds.eel)
 
-residualsEcdfPlot( cds, "Aa" )
-residualsEcdfPlot( cds, "Aj" )
+residualsEcdfPlot( cds.eel, "Aa" )
+residualsEcdfPlot( cds.eel, "Aj" )
 
 plot( 
-     res$baseMean, 
-     res$log2FoldChange, 
+     res.eel$baseMean, 
+     res.eel$log2FoldChange, 
      log="x", pch=20, cex=.4, 
-     col = ifelse( res$padj < .1, "red", "black" ),
+     col = ifelse( res.eel$padj < .1, "red", "black" ),
      main="My data")
 
-
+sig.eel <- res.eel[res.eel$padj < .1 & !is.na(res.eel$padj),"id"]
 
 ## Populations
 
-cds <- newCountDataSet(counts.frame, pop.conds)
-cds <- estimateSizeFactors(cds)
-cds <- estimateVarianceFunctions(cds)
-res <- nbinomTest(cds, "EU", "TW")
+cds.pop <- newCountDataSet(counts.frame, pop.conds)
+cds.pop <- estimateSizeFactors(cds.pop)
+cds.pop <- estimateVarianceFunctions(cds.pop)
+res.pop <- nbinomTest(cds.pop, "EU", "TW")
 
-scvPlot(cds)
+scvPlot(cds.pop)
 
-residualsEcdfPlot( cds, "EU" )
-residualsEcdfPlot( cds, "TW" )
+residualsEcdfPlot( cds.pop, "EU" )
+residualsEcdfPlot( cds.pop, "TW" )
 
 plot( 
-     res$baseMean, 
-     res$log2FoldChange, 
+     res.pop$baseMean, 
+     res.pop$log2FoldChange, 
      log="x", pch=20, cex=.4, 
-     col = ifelse( res$padj < .1, "red", "black" ),
+     col = ifelse( res.pop$padj < .1, "red", "black" ),
      main="My data")
+
+sig.pop <- res.pop[res.pop$padj < .1 & !is.na(res.pop$padj),"id"]

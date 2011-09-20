@@ -1,0 +1,69 @@
+library(ggplot2)
+library(reshape)
+
+stderr <- function(x) sqrt(var(x, na.rm=TRUE)/length(x[!is.na(x)]))
+
+
+EA <- read.delim("AAL_SCHL_EH.csv", header=TRUE, sep=",", as.is=TRUE)
+
+facs <- c("A.No.", "A.spec", "L.population", "Dpi","tank","L2")
+measure <- c("length", "weight")
+counts <- c("l3", "l4", "adult.m", "adult.f","enc")
+ofacs <- c("egg","Pseudo.0.3")
+
+EA[,facs] <- lapply(EA[,facs], as.factor)
+EA[,measure] <- lapply(EA[,measure], as.numeric)
+EA[,counts] <- lapply(EA[,counts], as.numeric)
+EA[,ofacs] <- lapply(EA[,ofacs],function (x) as.ordered(as.numeric(as.character(x))))
+
+E <- EA[, c(facs, measure, counts, ofacs)]
+E$intensity <- apply(data.frame(E$adult.m, E$adult.f), 1, sum)
+
+E.long <- melt(E, measure.vars=c("l3", "l4", "adult.m", "adult.f"))
+               
+AMS <- tapply(E.long$value,
+              list(E.long$L.population, E.long$A.spec, E.long$variable),
+              mean, na.rm=TRUE)
+
+AMS <- melt(AMS)
+names(AMS) <- c("population", "species", "stage", "mean.value")
+
+AMS$population <- ifelse(AMS$population=="R", "Germany", "Taiwan")
+                    
+AMS$population <- factor(AMS$population, levels=c("Germany", "Taiwan"), ordered=TRUE)
+AMS$species <- ifelse(AMS$species%in%"AA", "Anguilla anguilla", "Anguilla japonica")
+AMS$species <- factor(AMS$species, levels=c("Anguilla anguilla", "Anguilla japonica"), ordered=TRUE)
+AMS$stage <- factor(AMS$stage, levels=c("l3", "l4", "adult.m", "adult.f"), ordered=TRUE)
+
+
+ASE <- tapply(E.long$value,
+              list(E.long$L.population, E.long$A.spec, E.long$variable),
+              stderr)
+
+ASE <- melt(ASE)
+AMS <- cbind(AMS, se.value=ASE$value)
+
+
+sample.s <- tapply(E.long$value,
+              list(E.long$L.population, E.long$A.spec),
+              length)
+sample.s <- melt(sample.s)$value
+AMS <- cbind(AMS, sample.n=sample.s)
+
+limits <- aes(ymax = mean.value + se.value , ymin=mean.value - se.value)
+
+##  ggplots
+gbar <- ggplot(AMS, aes(x= stage, y=mean.value,
+                        fill=stage,
+                        label=paste("n=", sample.n, sep=""))) +
+  geom_bar(stat="identity") +
+  geom_errorbar(limits) +
+  facet_grid(species ~ population) +
+  coord_flip() +
+  theme_bw() +
+  scale_x_discrete("Days post infection (dpi)") +
+  scale_y_continuous("Mean recovery (individuals)") +
+  geom_text(x=1, y=5)+
+  opts(strip.text.y = theme_text(face="italic", angle=-90)) 
+
+ggsave("/home/ele/thesis/experimental_inf/figures/stages_plot.png", gbar, width=12, height=8)
