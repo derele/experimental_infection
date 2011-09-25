@@ -1,0 +1,104 @@
+%% BioMed_Central_Bib_Style_v1.01
+
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{[#1]}
+\providecommand{\urlprefix}{}
+
+\bibitem{R_project}
+{R Development Core Team}: \emph{R: A language and environment for statistical
+  computing}. R Foundation for Statistical Computing, Vienna, Austria 2009,
+  \urlprefix\url{[http://www.R-project.org]}.
+
+\bibitem{lmucs-papers:Leisch:2002}
+Leisch F: \textbf{Sweave: Dynamic Generation of Statistical Reports Using
+  Literate Data Analysis}. In \emph{Compstat 2002 --- Proceedings in
+  Computational Statistics}. Edited by H{\"a}rdle W, R{\"o}nz B, Physica
+  Verlag, Heidelberg 2002:575--580,
+  \urlprefix\url{[http://www.stat.uni-muenchen.de/~leisch/Sweave]}. [ISBN
+  3-7908-1517-9].
+
+\bibitem{weaver}
+Falcon S: \textbf{Caching code chunks in dynamic documents}.
+  \emph{Computational Statistics} 2009, \textbf{24}(2):255--261,
+  \urlprefix\url{[http://www.springerlink.com/content/55411257n1473414]}.
+
+\bibitem{lattice-book}
+Sarkar D: \emph{Lattice: Multivariate Data Visualization with R}. New York:
+  Springer 2008, \urlprefix\url{[http://lmdvr.r-forge.r-project.org]}. [ISBN
+  978-0-387-75968-5].
+
+\bibitem{ggplot-book}
+Wickham H: \emph{ggplot2: elegant graphics for data analysis}. Springer New
+  York 2009, \urlprefix\url{[http://had.co.nz/ggplot2/book]}.
+
+\end{thebibliography}
+
+\newcommand{\BMCxmlcomment}[1]{}
+
+\BMCxmlcomment{
+
+<refgrp>
+
+<bibl id="B1">
+  <title><p>R: A language and environment for statistical computing</p></title>
+  <aug>
+    <au><cnm>{R Development Core Team}</cnm></au>
+  </aug>
+  <publisher>Vienna, Austria</publisher>
+  <pubdate>2009</pubdate>
+  <url>http://www.R-project.org</url>
+</bibl>
+
+<bibl id="B2">
+  <title><p>Sweave: Dynamic Generation of Statistical Reports Using Literate
+  Data Analysis</p></title>
+  <aug>
+    <au><snm>Leisch</snm><fnm>F</fnm></au>
+  </aug>
+  <source>Compstat 2002 --- Proceedings in Computational Statistics</source>
+  <publisher>Physica Verlag, Heidelberg</publisher>
+  <editor>Wolfgang H{\"a}rdle and Bernd R{\"o}nz</editor>
+  <pubdate>2002</pubdate>
+  <fpage>575</fpage>
+  <lpage>-580</lpage>
+  <url>http://www.stat.uni-muenchen.de/~leisch/Sweave</url>
+  <note>ISBN 3-7908-1517-9</note>
+</bibl>
+
+<bibl id="B3">
+  <title><p>Caching code chunks in dynamic documents</p></title>
+  <aug>
+    <au><snm>Falcon</snm><fnm>S</fnm></au>
+  </aug>
+  <source>Computational Statistics</source>
+  <pubdate>2009</pubdate>
+  <volume>24</volume>
+  <issue>2</issue>
+  <fpage>255</fpage>
+  <lpage>261</lpage>
+  <url>http://www.springerlink.com/content/55411257n1473414</url>
+</bibl>
+
+<bibl id="B4">
+  <title><p>Lattice: Multivariate Data Visualization with R</p></title>
+  <aug>
+    <au><snm>Sarkar</snm><fnm>D</fnm></au>
+  </aug>
+  <publisher>New York: Springer</publisher>
+  <pubdate>2008</pubdate>
+  <url>http://lmdvr.r-forge.r-project.org</url>
+  <note>ISBN 978-0-387-75968-5</note>
+</bibl>
+
+<bibl id="B5">
+  <title><p>ggplot2: elegant graphics for data analysis</p></title>
+  <aug>
+    <au><snm>Wickham</snm><fnm>H</fnm></au>
+  </aug>
+  <publisher>Springer New York</publisher>
+  <pubdate>2009</pubdate>
+  <url>http://had.co.nz/ggplot2/book</url>
+</bibl>
+
+</refgrp>
+} % end of \BMCxmlcomment
