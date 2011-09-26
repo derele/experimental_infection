@@ -1,10 +1,10 @@
-This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.9.20)  24 SEP 2011 18:19
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2009.9.20)  26 SEP 2011 02:01
 entering extended mode
  %&-line parsing enabled.
-**\nonstopmode \input{/home/ele/thesis/experimental_inf/paper/expression_paper.
-tex}
-(/home/ele/thesis/experimental_inf/paper/expression_paper.tex
-(/home/ele/thesis/experimental_inf/paper/bmc_article.cls
+**\nonstopmode \input{/home/ele/thesis/experimental_infection/paper/expression_
+paper.tex}
+(/home/ele/thesis/experimental_infection/paper/expression_paper.tex
+(/home/ele/thesis/experimental_infection/paper/bmc_article.cls
 Document Class: bmc_article 2003/09/01 v1.01 BioMed Central article class
 (/usr/share/texmf/tex/latex/base/article.cls
 Document Class: article 2005/09/16 v1.4f Standard LaTeX document class
@@ -534,7 +534,7 @@ LaTeX Font Info:    Try loading font information for T1+aer on input line 100.
 (/usr/share/texmf/tex/latex/ae/t1aer.fd
 File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
 ))))
-(/home/ele/thesis/experimental_inf/paper/expression_paper.aux)
+(/home/ele/thesis/experimental_infection/paper/expression_paper.aux)
 \openout1 = `expression_paper.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 109.
@@ -581,29 +581,29 @@ Overfull \hbox (9.98987pt too wide) in paragraph at lines 158--158
 [1
 
 {/usr/share/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-(/home/ele/thesis/experimental_inf/paper/expression_paper.bbl
+(/home/ele/thesis/experimental_infection/paper/expression_paper.bbl
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <9> on input line 10.
-) [2] [3] [4]
-(/home/ele/thesis/experimental_inf/paper/expression_paper.aux) ) 
+) [2]
+[3] [4] (/home/ele/thesis/experimental_infection/paper/expression_paper.aux) ) 
 Here is how much of TeX's memory you used:
  2450 strings out of 256216
- 31256 string characters out of 1917072
- 80673 words of memory out of 1500000
+ 31322 string characters out of 1917072
+ 80685 words of memory out of 1500000
  5661 multiletter control sequences out of 10000+200000
  39456 words of font info for 72 fonts, out of 1200000 for 2000
  645 hyphenation exceptions out of 8191
- 36i,5n,21p,325b,410s stack positions out of 5000i,500n,6000p,200000b,15000s
-</usr/share/tex
-mf/fonts/type1/bluesky/cm/cmbx9.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cm
-mi8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fo
-nts/type1/bluesky/cm/cmr6.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr8.pfb
-></usr/share/texmf/fonts/type1/bluesky/cm/cmr9.pfb></usr/share/texmf/fonts/type
-1/bluesky/cm/cmss10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmss12.pfb></u
-sr/share/texmf/fonts/type1/bluesky/cm/cmss8.pfb></usr/share/texmf/fonts/type1/b
-luesky/cm/cmssbx10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsy6.pfb></usr
-/share/texmf/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/blu
-esky/cm/cmti9.pfb>
+ 36i,5n,21p,331b,410s stack positions out of 5000i,500n,6000p,200000b,15000s
+<
+/usr/share/texmf/fonts/type1/bluesky/cm/cmbx9.pfb></usr/share/texmf/fonts/type1
+/bluesky/cm/cmmi8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/
+share/texmf/fonts/type1/bluesky/cm/cmr6.pfb></usr/share/texmf/fonts/type1/blues
+ky/cm/cmr8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr9.pfb></usr/share/te
+xmf/fonts/type1/bluesky/cm/cmss10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/
+cmss12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmss8.pfb></usr/share/texmf
+/fonts/type1/bluesky/cm/cmssbx10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/c
+msy6.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf/f
+onts/type1/bluesky/cm/cmti9.pfb>
 Output written on expression_paper.pdf (4 pages, 82838 bytes).
 PDF statistics:
  67 PDF objects out of 1000 (max. 8388607)

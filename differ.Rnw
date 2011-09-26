@@ -1,6 +1,6 @@
 <<differ, echo=FALSE>>=
 
-EA <- read.delim("/home/ele/thesis/experimental_inf/AAL_SCHL_EH.csv",
+EA <- read.delim("/home/ele/thesis/experimental_infection/AAL_SCHL_EH.csv",
                  header=TRUE, sep=",", as.is=TRUE)
 facs <- c("A.No.", "A.spec", "L.population", "Dpi","tank","L2")
 measure <- c("length", "weight")
@@ -64,6 +64,6 @@ gbar <- ggplot(AMS, aes(x= stage, y=mean.value,
 
 <<stages.plot, echo=FALSE>>=
 
-ggsave("/home/ele/thesis/experimental_inf/figures/stages_plot.png", gbar, width=12, height=8)
+ggsave("/home/ele/thesis/experimental_infection/figures/stages_plot.png", gbar, width=12, height=8)
 
 @ 
