@@ -226,7 +226,7 @@
 \section*{Results}
 
 <<load.libs, echo=FALSE, results=hide>>=
-##library(VennDiagram)
+library(VennDiagram)
 library(xtable)
 library(reshape)
 library(ggplot2)
@@ -235,12 +235,12 @@ library(ggplot2)
 ##library(GOstats)
 ##library(GO.db)
 
-##library(limma)
 
+library(limma)
 library(DESeq)
+library(edgeR)
 library(ShortRead)
 library(Rsamtools)
-
 ## source("/home/ele/thesis/454/common_R_functions.R")
 @ 
 
@@ -252,9 +252,11 @@ The populations differ
 
 The gene expression does too
 
-\SweaveInput{../read-bam.Rnw}
+\SweaveInput{../basic/read-bam.Rnw}
 
-Foo bar
+\SweaveInput{../exp_test/DESeq.Rnw}
+
+\SweaveInput{../exp_test/edgeR.Rnw}
 
 
 <<save, echo=FALSE, results=hide>>=

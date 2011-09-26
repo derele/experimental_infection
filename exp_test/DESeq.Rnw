@@ -1,0 +1,109 @@
+<<DESeq, echo=FALSE, cache=TRUE>>=
+sex.conds <- factor(ifelse(grepl("M$", names(counts.frame)), "male", "female" ))
+eel.conds <- factor(ifelse(grepl("^AA", names(counts.frame)), "Aa", "Aj" ))
+pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" ))
+
+## ANTI-conditions contrasting just the replicates
+## good methods should not find significance here
+rep.conds <- paste(sex.conds, eel.conds, pop.conds)
+rep.conds[!duplicated(rep.conds)] <- "first"
+rep.conds[rep.conds!="first" & !duplicated(rep.conds)] <- "second"
+rep.conds[rep.conds!=c("first", "second")] <- "third"
+rep.conds <- as.factor(rep.conds)
+
+## Male/Female
+
+cds.mf <- newCountDataSet(counts.frame, sex.conds)
+cds.mf <- estimateSizeFactors(cds.mf)
+cds.mf <- estimateVarianceFunctions(cds.mf)
+res.mf <- nbinomTest(cds.mf, "male", "female")
+
+vsd <- getVarianceStabilizedData( cds.mf )
+dists <- dist( t( vsd ) )
+idists <- as.matrix(dists)
+
+sig.mf <- res.mf[res.mf$padj < .1 & !is.na(res.mf$padj),"id"]
+
+## Eel
+
+cds.eel <- newCountDataSet(counts.frame, eel.conds)
+cds.eel <- estimateSizeFactors(cds.eel)
+cds.eel <- estimateVarianceFunctions(cds.eel)
+res.eel <- nbinomTest(cds.eel, "Aa", "Aj")
+
+
+sig.eel <- res.eel[res.eel$padj < .1 & !is.na(res.eel$padj),"id"]
+
+## Populations
+
+cds.pop <- newCountDataSet(counts.frame, pop.conds)
+cds.pop <- estimateSizeFactors(cds.pop)
+cds.pop <- estimateVarianceFunctions(cds.pop)
+res.pop <- nbinomTest(cds.pop, "EU", "TW")
+
+sig.pop <- res.pop[res.pop$padj < .1 & !is.na(res.pop$padj),"id"]
+
+
+cds.rep <- newCountDataSet(counts.frame, rep.conds)
+cds.rep <- estimateSizeFactors(cds.rep)
+cds.rep <- estimateVarianceFunctions(cds.rep)
+res.rep1 <- nbinomTest(cds.rep, "first", "second")
+res.rep2 <- nbinomTest(cds.rep, "first", "third")
+res.rep3 <- nbinomTest(cds.rep, "second", "third")
+
+sig.rep1 <- res.rep1[res.rep1$padj < .1 & !is.na(res.rep1$padj),"id"]
+sig.rep2 <- res.rep2[res.rep2$padj < .1 & !is.na(res.rep2$padj),"id"]
+sig.rep3 <- res.rep3[res.rep3$padj < .1 & !is.na(res.rep3$padj),"id"]
+### ohh damn this is a long list of bullshit 
+shit <- length(unique(c(sig.rep1, sig.rep2, sig.rep3)))
+@ 
+
+<<DESeq.plots, echo=FALSE, results=hide>>=
+## check that m/f are clustering, etc...
+png("../figures/heat_rep.png", width=720, height=720)
+heatmap (idists , symm=TRUE, margins = c (7,7))
+dev.off()
+
+## Worm Sex
+
+## scvPlot(cds.mf)
+
+## residualsEcdfPlot( cds.mf, "male" )
+## residualsEcdfPlot( cds.mf, "female" )
+
+## plot( 
+##      res.mf$baseMean, 
+##      res.mf$log2FoldChange, 
+##      log="x", pch=20, cex=.4, 
+##      col = ifelse( res.mf$padj < .1, "red", "black" ),
+##      main="My data")
+
+## Eel species
+
+## scvPlot(cds.eel)
+
+## residualsEcdfPlot( cds.eel, "Aa" )
+## residualsEcdfPlot( cds.eel, "Aj" )
+
+## plot( 
+##      res.eel$baseMean, 
+##      res.eel$log2FoldChange, 
+##      log="x", pch=20, cex=.4, 
+##      col = ifelse( res.eel$padj < .1, "red", "black" ),
+##      main="My data")
+
+## Populations
+
+## scvPlot(cds.pop)
+
+## residualsEcdfPlot( cds.pop, "EU" )
+## residualsEcdfPlot( cds.pop, "TW" )
+
+## plot( 
+##      res.pop$baseMean, 
+##      res.pop$log2FoldChange, 
+##      log="x", pch=20, cex=.4, 
+##      col = ifelse( res.pop$padj < .1, "red", "black" ),
+##      main="Differences between populations")
+
+@ 

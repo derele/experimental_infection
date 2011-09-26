@@ -1,6 +1,6 @@
 <<differ, echo=FALSE, cache=TRUE>>=
 
-stderr <- function(x) sqrt(var(x, na.rm=TRUE)/length(x[!is.na(x)]))
+get.se <- function(x) sqrt(var(x, na.rm=TRUE)/length(x[!is.na(x)]))
 
 EA <- read.delim("/home/ele/thesis/experimental_infection/AAL_SCHL_EH.csv",
                  header=TRUE, sep=",", as.is=TRUE)
@@ -35,7 +35,7 @@ AMS$stage <- factor(AMS$stage, levels=c("l3", "l4", "adult.m", "adult.f"), order
 
 ASE <- tapply(E.long$value,
               list(E.long$L.population, E.long$A.spec, E.long$variable),
-              stderr)
+              get.se)
 
 ASE <- melt(ASE)
 AMS <- cbind(AMS, se.value=ASE$value)

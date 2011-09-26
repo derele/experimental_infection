@@ -1,0 +1,32 @@
+<<limma, echo=FALSE, cache=TRUE>>=
+## use the variance stabilized data from DESeq
+
+li.fit <-  lmFit(vsd, design)
+li.fit <- eBayes(li.fit)
+
+li.results <- decideTests(li.fit, adjust.method="BH", p.value=.1)
+li.results <- as.data.frame(li.results)
+
+li.contigs.sex <- as.data.frame(topTable(li.fit, coef=2, n=nrow(li.fit)))
+li.contigs.sex <- li.contigs.sex[li.contigs.sex$adj.P.Val<0.1, "ID"]
+
+li.contigs.eel <- as.data.frame(topTable(li.fit, coef=3, n=nrow(li.fit)))
+li.contigs.eel <- li.contigs.eel[li.contigs.eel$adj.P.Val<0.1, "ID"]
+
+li.contigs.pop <- as.data.frame(topTable(li.fit, coef=4, n=nrow(li.fit)))
+li.contigs.pop <- li.contigs.pop[li.contigs.pop$adj.P.Val<0.1, "ID"]
+
+li.contigs.sex.eel <- as.data.frame(topTable(li.fit, coef=5, n=nrow(li.fit)))
+li.contigs.sex.eel <- li.contigs.sex.eel[li.contigs.sex.eel$adj.P.Val<0.1, "ID"]
+
+li.contigs.sex.pop <- as.data.frame(topTable(li.fit, coef=6, n=nrow(li.fit)))
+li.contigs.sex.pop <- li.contigs.sex.pop[li.contigs.sex.pop$adj.P.Val<0.1, "ID"]
+
+li.contigs.eel.pop <- as.data.frame(topTable(li.fit, coef=7, n=nrow(li.fit)))
+li.contigs.eel.pop <- li.contigs.eel.pop[li.contigs.eel.pop$adj.P.Val<0.1, "ID"]
+
+li.contigs.sex.eel.pop <- as.data.frame(topTable(li.fit, coef=8, n=nrow(li.fit)))
+li.contigs.sex.eel.pop <- li.contigs.sex.eel.pop[li.contigs.sex.eel.pop$adj.P.Val<0.1, "ID"]
+
+## Very poor results
+@ 
