@@ -1,4 +1,6 @@
-<<differ, echo=FALSE>>=
+<<differ, echo=FALSE, cache=TRUE>>=
+
+stderr <- function(x) sqrt(var(x, na.rm=TRUE)/length(x[!is.na(x)]))
 
 EA <- read.delim("/home/ele/thesis/experimental_infection/AAL_SCHL_EH.csv",
                  header=TRUE, sep=",", as.is=TRUE)

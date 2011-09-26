@@ -1,4 +1,4 @@
-<<readBam, echo=FALSE>>=
+<<readBam, echo=FALSE, cache=TRUE>>=
 
 ## Rsamtools
 what <- c("rname")# , "strand", "pos", "qwidth", "seq")

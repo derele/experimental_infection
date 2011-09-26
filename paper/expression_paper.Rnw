@@ -241,14 +241,14 @@ library(DESeq)
 library(ShortRead)
 library(Rsamtools)
 
-source("/home/ele/thesis/454/common_R_functions.R")
+## source("/home/ele/thesis/454/common_R_functions.R")
 @ 
 
-\SweaveInput{../differ.Rnw}
+\SweaveInput{../basic/differ.Rnw}
 
 The populations differ
 
-\SweaveInput{../submit.Rnw}
+\SweaveInput{../basic/submit.Rnw}
 
 The gene expression does too
 
