@@ -2,82 +2,144 @@
 
 design <- model.matrix(~sex.conds*eel.conds*pop.conds)
 
+## Counts frame to full DGEList
 ed <- DGEList(counts.frame, lib.size=colSums(counts.frame))
 ed <- calcNormFactors(ed)
-
-## This would be only for single factor data
-## ed <- estimateCommonDisp(ed)
-## ed <- estimateTagwiseDisp(ed)
-
 ed <- estimateGLMCommonDisp(ed, design=design)
 ed <- estimateGLMTrendedDisp(ed, design=design)
 ed <- estimateGLMTagwiseDisp(ed, design=design)
 
+## glmfit for DGEList uding tagwise dispersion
 glmfit <- glmFit(ed, design, dispersion=ed$tagwise.dispersion)
 
-## differences between sexes
-results.sex <- glmLRT(ed, glmfit, coef=2)
-summary(decideTestsDGE(results.sex, p.value = 0.05))
+glm.wrapper <- function(de.obj, fit.obj, conds.regex){
+  glm.list <- list()
+  coe <- names(as.data.frame(fit.obj$design))
+  coe.l <- lapply(conds.regex, function (x) grep(x, coe))
+  for (i in 1:length(conds.regex)){
+    glm.list[[conds.regex[[i]]]] <- glmLRT(de.obj, fit.obj, coef=coe.l[[i]])
+  }
+  return(glm.list)
+}
 
-results.eel <- glmLRT(ed, glmfit, coef=3)
-summary(decideTestsDGE(results.eel, p.value = 0.05))
+## selects all coefficients being contained in each other hierachically
+combi.conds <- gsub(":", ".*", names(as.data.frame(glmfit$design))[2:8])
+glm.l <- glm.wrapper(ed, glmfit, combi.conds)
 
-results.pop <- glmLRT(ed, glmfit, coef=4)
-summary(decideTestsDGE(results.pop, p.value = 0.05))
+## topTags works (same as using p.adjust directly)
+topTags.l <- lapply(glm.l, function (x){
+  tt <- topTags(x, n=40000) ## set as high as the length 
+  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+})
 
-results.sex.eel <- glmLRT(ed, glmfit, coef=5)
-summary(decideTestsDGE(results.sex.eel, p.value = 0.05))
+## decideTestsDGE does not work
+## decideTestsDGE.l <- lapply(glm.l, function (x){
+##    subset(x$table, (decideTestsDGE(x, p.value = .05))!=0)})
 
-results.sex.pop <- glmLRT(ed, glmfit, coef=6)
-summary(decideTestsDGE(results.sex.pop, p.value = 0.05))
+contigs.list <- lapply(topTags.l, function (x) rownames(x$table))
 
-results.eel.pop <- glmLRT(ed, glmfit, coef=7)
-summary(decideTestsDGE(results.eel.pop, p.value = 0.05))
+## tables.list <- lapply(topTags.l, function (x) {
+##   merge(x$table, as.data.frame(do.call("cbind",
+##                                  by(t(counts.frame),
+##                                     sex.conds:eel.conds:pop.conds, mean))) ,
+##         by="row.names")
+## })
 
-results.sex.eel.pop <- glmLRT(ed, glmfit, coef=8)
-summary(decideTestsDGE(results.sex.eel.pop, p.value = 0.05))
 
-## contigs.all <- c(contigs.sex, contigs.eel, contigs.pop,
-##                  contigs.sex.eel, contigs.sex.pop, contigs.eel.pop, 
-##                  contigs.sex.eel.pop)
+## ## now see if edgeR controls properly type-I error by testing replicated for de 
+## rep.design <- model.matrix(~sex.conds*rep.conds)
+## rep.ed <- DGEList(counts.frame, lib.size=colSums(counts.frame))
+## rep.ed <- calcNormFactors(rep.ed)
 
-## now see if edgeR controls properly type-I error by testing replicated for de 
-shit.design <- model.matrix(~rep.conds)
-shit.ed <- DGEList(counts.frame, lib.size=colSums(counts.frame))
-shit.ed <- calcNormFactors(shit.ed)
+## rep.ed <- estimateGLMCommonDisp(rep.ed, design=rep.design)
+## rep.ed <- estimateGLMTrendedDisp(rep.ed, design=rep.design)
+## rep.ed <- estimateGLMTagwiseDisp(rep.ed, design=rep.design)
+## rep.glmfit <- glmFit(rep.ed, rep.design, dispersion=rep.ed$tagwise.dispersion)
 
-shit.ed <- estimateGLMCommonDisp(shit.ed, design=shit.design)
-shit.ed <- estimateGLMTrendedDisp(shit.ed, design=shit.design)
-shit.ed <- estimateGLMTagwiseDisp(shit.ed, design=shit.design)
-shit.glmfit <- glmFit(shit.ed, shit.design, dispersion=shit.ed$tagwise.dispersion)
+## results.rep <- glmLRT(rep.ed, rep.glmfit)
 
-results.shit <- glmLRT(shit.ed, shit.glmfit)
-results.shit2 <- glmLRT(shit.ed, shit.glmfit, coef=2)
-results.shit3 <- glmLRT(shit.ed, shit.glmfit, coef=3)
+## table.rep <- subset(results.rep$table,
+##                      (decideTestsDGE(results.rep, p.value = .1))!=0)
+## contigs.rep <- rownames(table.rep)
 
-summary(decideTestsDGE(results.shit2, p.value = 0.05))
-summary(decideTestsDGE(results.shit3, p.value = 0.05))
+## table.rep <- merge(table.rep,
+##                     as.data.frame(do.call("cbind",
+##                                           by(t(counts.frame),
+##                                              rep.conds, mean))) ,
+##                     by="row.names")
+
+## ## a design ignoring everything but the populations 
+## easy.design <- model.matrix(~pop.conds)
+## easy.ed <- DGEList(counts.frame, lib.size=colSums(counts.frame))
+## easy.ed <- calcNormFactors(easy.ed)
+
+## easy.ed <- estimateGLMCommonDisp(easy.ed, design=easy.design)
+## easy.ed <- estimateGLMTrendedDisp(easy.ed, design=easy.design)
+## easy.ed <- estimateGLMTagwiseDisp(easy.ed, design=easy.design)
+## easy.glmfit <- glmFit(easy.ed, easy.design, dispersion=easy.ed$tagwise.dispersion)
+
+## results.easy <- glmLRT(easy.ed, easy.glmfit)
+
+## table.easy <- subset(results.easy$table,
+##                      (decideTestsDGE(results.easy, p.value = .1))!=0)
+## contigs.easy <- rownames(table.easy)
+
+## table.easy <- merge(table.easy,
+##                     as.data.frame(do.call("cbind",
+##                                           by(t(counts.frame),
+##                                              pop.conds, mean))) ,
+##                     by="row.names")
+
+## plot fitted vs. observed values for all contigs and libraries 
+cf <- cbind(rownames(counts.frame), counts.frame)
+observed <- melt.data.frame(cf, id.vars="rownames(counts.frame)")
+names(observed) <- c("contig", "lib", "observed")
+long.fitted <- melt(glmfit$fitted.values)
+names(long.fitted) <- c("contig", "lib", "fitted")
+fit.comb <- merge(observed, long.fitted)
+
+fit.plot <- ggplot(fit.comb, aes(observed, fitted)) +
+  geom_point() +
+  facet_wrap(~lib) +
+  scale_x_log10() +
+  scale_y_log10()
+
+
 @ 
 
 <<edgeR.plots, echo=FALSE, results=hide>>=
 
-venn.diagram(list(sex         = match(contigs.sex, contigs.all),
-                  sex_eel     = match(contigs.sex.eel, contigs.all),
-                  sex_pop     = match(contigs.sex.pop, contigs.all),
-                  sex_eel_pop = match(contigs.sex.eel.pop, contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/sex_venn.png")
+ggsave("/home/ele/thesis/experimental_infection/figures/fit_obs.png",
+       fit.plot,
+       width=21, height=21)
+  
+## venn.diagram(list(sex         = match(contigs.sex, contigs.all),
+##                   sex_eel     = match(contigs.sex.eel, contigs.all),
+##                   sex_pop     = match(contigs.sex.pop, contigs.all),
+##                   sex_eel_pop = match(contigs.sex.eel.pop, contigs.all)),
+##              filename = "/home/ele/thesis/experimental_infection/figures/sex_venn.png")
 
-venn.diagram(list(eel         = match(contigs.eel, contigs.all),
-                  eel_pop     = match(contigs.eel.pop, contigs.all),
-                  eel_sex     = match(contigs.sex.eel, contigs.all),
-                  eel_sex_pop = match(contigs.sex.eel.pop, contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/eel_venn.png")
+## venn.diagram(list(eel         = match(contigs.eel, contigs.all),
+##                   eel_pop     = match(contigs.eel.pop, contigs.all),
+##                   eel_sex     = match(contigs.sex.eel, contigs.all),
+##                   eel_sex_pop = match(contigs.sex.eel.pop, contigs.all)),
+##              filename = "/home/ele/thesis/experimental_infection/figures/eel_venn.png")
 
-venn.diagram(list(pop         = match(contigs.pop, contigs.all),
-                  pop_eel     = match(contigs.eel.pop, contigs.all),
-                  pop_sex     = match(contigs.sex.pop, contigs.all),
-                  pop_eel_sex = match(contigs.sex.eel.pop, contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/pop_venn.png")
+## venn.diagram(list(pop         = match(contigs.pop, contigs.all),
+##                   pop_eel     = match(contigs.eel.pop, contigs.all),
+##                   pop_sex     = match(contigs.sex.pop, contigs.all),
+##                   pop_eel_sex = match(contigs.sex.eel.pop, contigs.all)),
+##              filename = "/home/ele/thesis/experimental_infection/figures/pop_venn.png")
+
+## venn.diagram(list(pop         = match(contigs.pop, contigs.all),
+##                   eel         = match(contigs.eel, contigs.all),
+##                   sex         = match(contigs.sex, contigs.all)),
+##              filename = "/home/ele/thesis/experimental_infection/figures/simple_venn.png")
+
+## venn.diagram(list(pop_all     = match(contigs.all.pop, contigs.all),
+##                   eel_all     = match(contigs.all.eel, contigs.all),
+##                   sex_all     = match(contigs.all.sex, contigs.all)),
+##              filename = "/home/ele/thesis/experimental_infection/figures/combi_venn.png")
 
 ## par(mfrow = c(1, 2))
 ## maPlot(ed$counts[, 1], ed$counts[, 2], normalize = TRUE, pch = 19,
@@ -93,4 +155,11 @@ venn.diagram(list(pop         = match(contigs.pop, contigs.all),
 ## grid(col = "blue")
 
 @ 
+
+<<plot.heat, echo=FALSE>>=
+## colors <- colorRampPalette(c("white", "darkblue"))(100)
+## heatmap( vsd[contigs.pop,], col = colors, scale = "none")
+
+@ 
+
 

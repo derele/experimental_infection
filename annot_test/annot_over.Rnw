@@ -1,0 +1,126 @@
+<<annot.test, echo=FALSE, cache=TRUE>>=
+
+ann <- GO.annot[GO.annot$pept_id%in%rownames(counts.frame) &
+                GO.annot$pept_id%in%good.contigs, ]
+ann.mapping <- ann[,c("pept_id", "go_term")]
+
+goframeData <- as.data.frame(cbind(frame.go_id=ann.mapping$go_term,
+                                   frame.Evidence="IEA",
+                                   frame.gene_id=ann.mapping$pept_id))
+goFrame <- GOFrame(goframeData, organism="Anguillicola crassus")
+goAllFrame <- GOAllFrame(goFrame)
+all.ann.mapping <- as.data.frame(cbind(pept_id=goAllFrame@data$gene_id,
+                                        go_term=goAllFrame@data$go_id))
+
+
+
+over.goseq <- function(de.contigs, contigs, map){
+  de <- as.integer(contigs%in%de.contigs)
+  names(de) <- contigs
+  bias.data <- as.integer(contig.df$length)
+  pwf <- nullp(de, bias.data=bias.data, plot.fit=FALSE) 
+  go.stats <- goseq(pwf, gene2cat=map, method='Wallenius')
+  GO.over <- merge(go.stats[go.stats$over_represented_pvalue<0.05,],
+                       ann, by.x="category", by.y="go_term")[, 1:6]
+  ratio <- do.call("rbind",
+                   by(GO.over, GO.over$category, function(x) {
+                     c(length(de[names(de)%in%x$pept_id & de>0]),
+                       length(unique(x$pept_id)))}))
+  ratio <- as.data.frame(ratio)
+  names(ratio) <- c("count", "size")
+  GO.over <- GO.over[GO.over$pept_id%in%names(de[de>0]), ]
+  merge(GO.over, ratio, by.x="category", by.y="row.names")
+}
+
+GO.over.sex <- over.goseq(contigs.sex,
+                          rownames(counts.frame),
+                          ann.mapping)
+GO.over.sex.all <- over.goseq(contigs.sex,
+                              rownames(counts.frame),
+                              all.ann.mapping)
+
+GO.over.eel <- over.goseq(contigs.eel,
+                          rownames(counts.frame),
+                          ann.mapping)
+GO.over.eel.all <- over.goseq(contigs.eel,
+                              rownames(counts.frame),
+                              all.ann.mapping)
+
+GO.over.pop <- over.goseq(contigs.pop,
+                          rownames(counts.frame),
+                          ann.mapping)
+GO.over.pop.all <- over.goseq(contigs.pop,
+                              rownames(counts.frame),
+                              all.ann.mapping)
+
+GO.over.sex.eel <- over.goseq(contigs.sex.eel,
+                              rownames(counts.frame),
+                              ann.mapping)
+GO.over.sex.eel.all <- over.goseq(contigs.sex.eel,
+                                  rownames(counts.frame),
+                                  all.ann.mapping)
+
+GO.over.sex.pop <- over.goseq(contigs.sex.pop,
+                              rownames(counts.frame),
+                              ann.mapping)
+GO.over.sex.pop.all <- over.goseq(contigs.sex.pop,
+                                  rownames(counts.frame),
+                                  all.ann.mapping)
+
+GO.over.eel.pop <- over.goseq(contigs.eel.pop,
+                              rownames(counts.frame),
+                              ann.mapping)
+GO.over.eel.pop.all <- over.goseq(contigs.eel.pop,
+                                  rownames(counts.frame),
+                                  all.ann.mapping)
+
+GO.over.sex.eel.pop <- over.goseq(contigs.sex.eel.pop,
+                                  rownames(counts.frame),
+                                  ann.mapping)
+GO.over.sex.eel.pop.all <- over.goseq(contigs.sex.eel.pop,
+                                      rownames(counts.frame),
+                                      all.ann.mapping)
+
+## repeat some of the dn.ds overrepresentation in 454
+## dn.ds <- over.goseq(big05.AC, dn.ds.df$contig, ann.mapping)
+
+## dn.ds.all <- over.goseq(big05.AC, dn.ds.df$contig,
+##                         all.ann.mapping[all.ann.mapping$pept_id%in%dn.ds.df$contig,])
+
+
+
+foo <- "x"
+
+## an alternative way to summarize
+## 
+
+
+## Old style
+## ## Sex
+## GO.sex.mf <- test.over.under.GOstats(ann, 
+##                                      contigs.sex, "MF")
+## GO.sex.bp <- test.over.under.GOstats(ann, 
+##                                      contigs.sex, "BP")
+## ## response <- GO.annot[GO.annot$go_term%in%"GO:0052572", "pept_id"]
+## GO.sex.cc <- test.over.under.GOstats(ann, 
+##                                      contigs.sex, "CC")
+
+## ## Population
+## GO.pop.mf <- test.over.under.GOstats(ann, 
+##                                      contigs.pop, "MF")
+## GO.pop.bp <- test.over.under.GOstats(ann, 
+##                                      contigs.pop, "BP")
+## ## response <- GO.annot[GO.annot$go_term%in%"GO:0052572", "pept_id"]
+## GO.pop.cc <- test.over.under.GOstats(ann, 
+##                                      contigs.pop, "CC")
+
+## ## Host species
+## GO.eel.mf <- test.over.under.GOstats(ann, 
+##                                      contigs.eel, "MF")
+## GO.eel.bp <- test.over.under.GOstats(ann, 
+##                                      contigs.eel, "BP")
+## GO.eel.cc <- test.over.under.GOstats(ann, 
+##                                      contigs.eel, "CC")
+
+
+@ 

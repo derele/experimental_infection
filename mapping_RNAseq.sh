@@ -6,7 +6,11 @@ SAMT=/home/ele/tools/samtools/samtools
 
 # ------------- the files that should be mapped     --------------------
 
+
+## We have to convert solexa-quality to phred-quality
 find .. -name "*.solfastq.gz" | parallel "gunzip -c {} | /home/ele/tools/fq_all2std.pl sol2std > {}.fastq";
+## We don't have to convert solexa-quality to phred-quality
+## find .. -name "*.solfastq.gz" | parallel "gunzip -c {} > {}.fastq";
 
 find .. -name "*.fastq" | parallel "$BWA aln db_assembly/fullest_assembly.fasta {} > {}.sai";
 
@@ -26,16 +30,16 @@ FA=($(find .. -name "*.fastq" | tr ' ' '\n' | sort -r));
 for ((i=0; i< ${#SA[*]}; i=i+4));
 do 
 
-echo "$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i]} ${SA[$i+1]} ${FA[$i]} ${FA[$i+1]} | $SAMT view -uS -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i]} | awk '{sub("../", "", $1); print $1}')_1;"
+echo "$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i]} ${SA[$i+1]} ${FA[$i]} ${FA[$i+1]} | $SAMT view -uS -q 1 -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i]} | awk '{sub("../", "", $1); print $1}')_1;"
 
-$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i]} ${SA[$i+1]} ${FA[$i]} ${FA[$i+1]} | $SAMT view -uS -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i]} | awk '{sub("../", "", $1); print $1}')_1 exitOnError; "pipe1"
+$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i]} ${SA[$i+1]} ${FA[$i]} ${FA[$i+1]} | $SAMT view -uS -q1  -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i]} | awk '{sub("../", "", $1); print $1}')_1 exitOnError; "pipe1"
 
-echo "$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i+2]} ${SA[$i+3]} ${FA[$i+2]} ${FA[$i+3]} | $SAMT view -uS -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i+2]} | awk '{sub("../", "", $1); print $1}')_2;"
+echo "$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i+2]} ${SA[$i+3]} ${FA[$i+2]} ${FA[$i+3]} | $SAMT view -uS -q 1  -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i+2]} | awk '{sub("../", "", $1); print $1}')_2;"
 
-$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i+2]} ${SA[$i+3]} ${FA[$i+2]} ${FA[$i+3]} | $SAMT view -uS -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i+2]} | awk '{sub("../", "", $1); print $1}')_2; exitOnError "pipe2"
+$BWA sampe db_assembly/fullest_assembly.fasta ${SA[$i+2]} ${SA[$i+3]} ${FA[$i+2]} ${FA[$i+3]} | $SAMT view -uS -q 1 -t db_assembly/fullest_assembly.fasta.fai  - | $SAMT sort -  $(dirname ${SA[$i+2]} | awk '{sub("../", "", $1); print $1}')_2; exitOnError "pipe2"
 
 done;
 
 
-## indes all the created files
+## index all the created files
 find -name "*.bam" | parallel /home/ele/tools/samtools/samtools index; exitOnError "index" 

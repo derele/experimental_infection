@@ -22,7 +22,7 @@ vsd <- getVarianceStabilizedData( cds.mf )
 dists <- dist( t( vsd ) )
 idists <- as.matrix(dists)
 
-sig.mf <- res.mf[res.mf$padj < .1 & !is.na(res.mf$padj),"id"]
+sig.mf <- res.mf[res.mf$padj < .01 & !is.na(res.mf$padj),"id"]
 
 ## Eel
 
@@ -31,8 +31,7 @@ cds.eel <- estimateSizeFactors(cds.eel)
 cds.eel <- estimateVarianceFunctions(cds.eel)
 res.eel <- nbinomTest(cds.eel, "Aa", "Aj")
 
-
-sig.eel <- res.eel[res.eel$padj < .1 & !is.na(res.eel$padj),"id"]
+sig.eel <- res.eel[res.eel$padj < .01 & !is.na(res.eel$padj),"id"]
 
 ## Populations
 
@@ -41,7 +40,7 @@ cds.pop <- estimateSizeFactors(cds.pop)
 cds.pop <- estimateVarianceFunctions(cds.pop)
 res.pop <- nbinomTest(cds.pop, "EU", "TW")
 
-sig.pop <- res.pop[res.pop$padj < .1 & !is.na(res.pop$padj),"id"]
+sig.pop <- res.pop[res.pop$padj < .01 & !is.na(res.pop$padj),"id"]
 
 
 cds.rep <- newCountDataSet(counts.frame, rep.conds)
@@ -51,11 +50,11 @@ res.rep1 <- nbinomTest(cds.rep, "first", "second")
 res.rep2 <- nbinomTest(cds.rep, "first", "third")
 res.rep3 <- nbinomTest(cds.rep, "second", "third")
 
-sig.rep1 <- res.rep1[res.rep1$padj < .1 & !is.na(res.rep1$padj),"id"]
-sig.rep2 <- res.rep2[res.rep2$padj < .1 & !is.na(res.rep2$padj),"id"]
-sig.rep3 <- res.rep3[res.rep3$padj < .1 & !is.na(res.rep3$padj),"id"]
+sig.rep1 <- res.rep1[res.rep1$padj < .01 & !is.na(res.rep1$padj),"id"]
+sig.rep2 <- res.rep2[res.rep2$padj < .01 & !is.na(res.rep2$padj),"id"]
+sig.rep3 <- res.rep3[res.rep3$padj < .01 & !is.na(res.rep3$padj),"id"]
 ### ohh damn this is a long list of bullshit 
-shit <- length(unique(c(sig.rep1, sig.rep2, sig.rep3)))
+sig.shit <- unique(c(sig.rep1, sig.rep2, sig.rep3))
 @ 
 
 <<DESeq.plots, echo=FALSE, results=hide>>=
@@ -75,7 +74,7 @@ dev.off()
 ##      res.mf$baseMean, 
 ##      res.mf$log2FoldChange, 
 ##      log="x", pch=20, cex=.4, 
-##      col = ifelse( res.mf$padj < .1, "red", "black" ),
+##      col = ifelse( res.mf$padj < .01, "red", "black" ),
 ##      main="My data")
 
 ## Eel species
@@ -89,7 +88,7 @@ dev.off()
 ##      res.eel$baseMean, 
 ##      res.eel$log2FoldChange, 
 ##      log="x", pch=20, cex=.4, 
-##      col = ifelse( res.eel$padj < .1, "red", "black" ),
+##      col = ifelse( res.eel$padj < .01, "red", "black" ),
 ##      main="My data")
 
 ## Populations
@@ -103,7 +102,7 @@ dev.off()
 ##      res.pop$baseMean, 
 ##      res.pop$log2FoldChange, 
 ##      log="x", pch=20, cex=.4, 
-##      col = ifelse( res.pop$padj < .1, "red", "black" ),
+##      col = ifelse( res.pop$padj < .01, "red", "black" ),
 ##      main="Differences between populations")
 
 @ 
