@@ -8,7 +8,7 @@ pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" 
 rep.conds <- paste(sex.conds, eel.conds, pop.conds)
 rep.conds[!duplicated(rep.conds)] <- "first"
 rep.conds[rep.conds!="first" & !duplicated(rep.conds)] <- "second"
-rep.conds[rep.conds!=c("first", "second")] <- "third"
+rep.conds[!rep.conds%in%c("first", "second")] <- "third"
 rep.conds <- as.factor(rep.conds)
 
 ## Male/Female

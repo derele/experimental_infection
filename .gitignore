@@ -5,3 +5,5 @@
 *.RData
 
 /weaver_debug_log.txt
+/exp_test/#DESeq.Rnw#
+/exp_test/_region_.tex

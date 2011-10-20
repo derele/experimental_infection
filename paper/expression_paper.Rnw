@@ -247,7 +247,7 @@ library(GSEABase)
 library(GO.db)
 
 load("/home/ele/thesis/454/paper/paper.Rdata")
-## source("/home/ele/thesis/454/common_R_functions.R")
+source("/home/ele/thesis/454/common_R_functions.R")
 @ 
 
 \SweaveInput{../basic/differ.Rnw}
