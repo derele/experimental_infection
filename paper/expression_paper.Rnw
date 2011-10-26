@@ -231,10 +231,6 @@ library(xtable)
 library(reshape)
 library(ggplot2)
 
-##library(GSEABase)
-##library(GOstats)
-##library(GO.db)
-
 
 library(limma)
 library(DESeq)
@@ -242,6 +238,7 @@ library(edgeR)
 library(ShortRead)
 library(Rsamtools)
 
+##library(GOstats)
 library(goseq)
 library(GSEABase)
 library(GO.db)

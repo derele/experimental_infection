@@ -13,7 +13,7 @@ rep.conds <- as.factor(rep.conds)
 
 ## Male/Female
 
-cds.mf <- newCountDataSet(counts.frame, sex.conds)
+cds.mf <- newCountDataSet(co.f, sex.conds)
 cds.mf <- estimateSizeFactors(cds.mf)
 cds.mf <- estimateVarianceFunctions(cds.mf)
 res.mf <- nbinomTest(cds.mf, "male", "female")
@@ -26,7 +26,7 @@ sig.mf <- res.mf[res.mf$padj < .01 & !is.na(res.mf$padj),"id"]
 
 ## Eel
 
-cds.eel <- newCountDataSet(counts.frame, eel.conds)
+cds.eel <- newCountDataSet(co.f, eel.conds)
 cds.eel <- estimateSizeFactors(cds.eel)
 cds.eel <- estimateVarianceFunctions(cds.eel)
 res.eel <- nbinomTest(cds.eel, "Aa", "Aj")
@@ -35,7 +35,7 @@ sig.eel <- res.eel[res.eel$padj < .01 & !is.na(res.eel$padj),"id"]
 
 ## Populations
 
-cds.pop <- newCountDataSet(counts.frame, pop.conds)
+cds.pop <- newCountDataSet(co.f, pop.conds)
 cds.pop <- estimateSizeFactors(cds.pop)
 cds.pop <- estimateVarianceFunctions(cds.pop)
 res.pop <- nbinomTest(cds.pop, "EU", "TW")
@@ -43,7 +43,7 @@ res.pop <- nbinomTest(cds.pop, "EU", "TW")
 sig.pop <- res.pop[res.pop$padj < .01 & !is.na(res.pop$padj),"id"]
 
 
-cds.rep <- newCountDataSet(counts.frame, rep.conds)
+cds.rep <- newCountDataSet(co.f, rep.conds)
 cds.rep <- estimateSizeFactors(cds.rep)
 cds.rep <- estimateVarianceFunctions(cds.rep)
 res.rep1 <- nbinomTest(cds.rep, "first", "second")
@@ -54,7 +54,7 @@ sig.rep1 <- res.rep1[res.rep1$padj < .01 & !is.na(res.rep1$padj),"id"]
 sig.rep2 <- res.rep2[res.rep2$padj < .01 & !is.na(res.rep2$padj),"id"]
 sig.rep3 <- res.rep3[res.rep3$padj < .01 & !is.na(res.rep3$padj),"id"]
 ### ohh damn this is a long list of bullshit 
-sig.shit <- unique(c(sig.rep1, sig.rep2, sig.rep3))
+sig.rep <- unique(c(sig.rep1, sig.rep2, sig.rep3))
 @ 
 
 <<DESeq.plots, echo=FALSE, results=hide>>=

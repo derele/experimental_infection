@@ -3,11 +3,13 @@
 design <- model.matrix(~sex.conds*eel.conds*pop.conds)
 
 ## Counts frame to full DGEList
-ed <- DGEList(counts.frame, lib.size=colSums(counts.frame))
+
+ed <- DGEList(co.f, lib.size=colSums(co.f))
 ed <- calcNormFactors(ed)
 ed <- estimateGLMCommonDisp(ed, design=design)
 ed <- estimateGLMTrendedDisp(ed, design=design)
 ed <- estimateGLMTagwiseDisp(ed, design=design)
+
 
 ## glmfit for DGEList uding tagwise dispersion
 glmfit <- glmFit(ed, design, dispersion=ed$tagwise.dispersion)
@@ -36,7 +38,7 @@ contigs.l <- lapply(topTags.l, function (x) rownames(x$table))
 contigs.all <- unlist(contigs.l)
 
 ## rep.design <- model.matrix(~sex.conds*eel.conds*rep.conds)
-## rep.ed <- DGEList(counts.frame, lib.size=colSums(counts.frame))
+## rep.ed <- DGEList(co.f, lib.size=colSums(co.f))
 ## rep.ed <- calcNormFactors(ed)
 ## rep.ed <- estimateGLMCommonDisp(rep.ed, design=rep.design)
 ## rep.ed <- estimateGLMTrendedDisp(rep.ed, design=rep.design)
@@ -47,9 +49,45 @@ contigs.all <- unlist(contigs.l)
 ## topTags.rep <- topTags(glm.rep, n=40000) ## set as high as the length 
 ## topTags.rep <- topTags.rep[topTags.rep$table$adj.P.Val<0.05] 
 
+## The same for MN-genes only
+ed.MN <- DGEList(co.f.MN, lib.size=colSums(co.f.MN))
+ed.MN <- calcNormFactors(ed.MN)
+ed.MN <- estimateGLMCommonDisp(ed.MN, design=design)
+ed.MN <- estimateGLMTrendedDisp(ed.MN, design=design)
+ed.MN <- estimateGLMTagwiseDisp(ed.MN, design=design)
+
+## glmfit for DGEList uding tagwise dispersion
+glmfit.MN <- glmFit(ed.MN, design, dispersion=ed.MN$tagwise.dispersion)
+
+## selects all coefficients being contained in each other hierachically
+combi.conds <- gsub(":", ".*", names(as.data.frame(glmfit.MN$design))[2:8])
+glm.MN.l <- glm.wrapper(ed.MN, glmfit.MN, combi.conds)
+
+## topTags works (same as using p.adjust directly)
+topTags.MN.l <- lapply(glm.MN.l, function (x){
+  tt <- topTags(x, n=40000) ## set as high as the length 
+  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+})
+
+contigs.MN.l <- lapply(topTags.MN.l, function (x) rownames(x$table))
+contigs.MN.all <- unlist(contigs.MN.l)
+
+## rep.design <- model.matrix(~sex.conds*eel.conds*rep.conds)
+## rep.ed.MN <- DGEList(co.f, lib.size=colSums(co.f))
+## rep.ed.MN <- calcNormFactors(ed.MN)
+## rep.ed.MN <- estimateGLMCommonDisp(rep.ed.MN, design=rep.design)
+## rep.ed.MN <- estimateGLMTrendedDisp(rep.ed.MN, design=rep.design)
+## rep.ed.MN <- estimateGLMTagwiseDisp(rep.ed.MN, design=rep.design)
+## rep.glmfit.MN <- glmfit(rep.ed.MN, rep.design, dispersion=rep.ed.MN$tagwise.dispersion)
+
+## glm.rep <- glmLRT(rep.ed.MN, rep.glmfit.MN, grep("rep", colnames(rep.glmfit.MN$design)))
+## topTags.rep <- topTags(glm.rep, n=40000) ## set as high as the length 
+## topTags.rep <- topTags.rep[topTags.rep$table$adj.P.Val<0.05] 
+
+
 ## plot fitted vs. observed values for all contigs and libraries 
-cf <- cbind(rownames(counts.frame), counts.frame)
-observed <- melt.data.frame(cf, id.vars="rownames(counts.frame)")
+cf <- cbind(rownames(co.f), co.f)
+observed <- melt.data.frame(cf, id.vars="rownames(co.f)")
 names(observed) <- c("contig", "lib", "observed")
 long.fitted <- melt(glmfit$fitted.values)
 names(long.fitted) <- c("contig", "lib", "fitted")
@@ -63,7 +101,7 @@ fit.plot <- ggplot(fit.comb, aes(observed, fitted)) +
 
 ##################### Male / Female seperately ###########################
 ##### Male
-m.c <- counts.frame[ , sex.conds=="male" ]
+m.c <- co.f[ , sex.conds=="male" ]
 design.sexless <- model.matrix(~eel.conds[sex.conds=="male"]*pop.conds[sex.conds=="male"])
 ## Counts frame to full DGEList
 dm <- DGEList(m.c,
@@ -81,10 +119,10 @@ glm.male <- glmLRT(dm, glmfit.male, coef=grep("pop", colnames(glmfit.male$design
 
 ## topTags works (same as using p.adjust directly)
 tt.male <- topTags(glm.male, n=40000)
-topTags.male <- tt[tt.male$table$adj.P.Val<0.05]
+topTags.male <- tt.male[tt.male$table$adj.P.Val<0.05]
 
 #### Female
-f.c <- counts.frame[ , sex.conds=="female" ]
+f.c <- co.f[ , sex.conds=="female" ]
 ## Counts frame to full DGEList
 df <- DGEList(f.c,
               lib.size=colSums(f.c))
@@ -101,13 +139,12 @@ glm.female <- glmLRT(df, glmfit.female, coef=grep("pop", colnames(glmfit.female$
 
 ## topTags works (same as using p.adjust directly)
 tt.female <- topTags(glm.female, n=40000)
-topTags.female <- tt[tt.female$table$adj.P.Val<0.05]
+topTags.female <- tt.female[tt.female$table$adj.P.Val<0.05]
 
 all.methods.pop.contigs <- intersect(intersect(rownames(topTags.female$table),
                                                rownames(topTags.male$table)),
                                      contigs.l[[3]])
 @ 
-
 
 <<edgeR.venns, echo=FALSE, results=hide>>=
 
@@ -120,7 +157,6 @@ venn.diagram(list(sex         = match(contigs.l[[1]], contigs.all),
                   sex_pop     = match(contigs.l[[5]], contigs.all),
                   sex_eel_pop = match(contigs.l[[7]], contigs.all)),
              filename = "/home/ele/thesis/experimental_infection/figures/sex_venn.png")
-
 
 venn.diagram(list(eel         = match(contigs.l[[2]], contigs.all),
                   sex_eel     = match(contigs.l[[4]], contigs.all),

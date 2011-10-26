@@ -1,0 +1,105 @@
+<<word.cloud, echo=FALSE>>=
+
+library(tm)
+
+go.word.cloud <- function (terms1, terms2, all, lab, tit){
+  one.termtable <- data.frame(table(terms1))
+  names(one.termtable) <- c("term", "freq.one")
+  two.termtable <- data.frame(table(terms2))
+  names(two.termtable) <- c("term", "freq.two")
+  term.df<- merge(one.termtable, two.termtable, all=all)
+  term.df[is.na(term.df$freq.one), "freq.one"] <- 0
+  term.df[is.na(term.df$freq.two), "freq.two"] <- 0
+  term.df<-transform(term.df, freq.dif=freq.one-freq.two)    
+  ## Create separate data frames for each frequency type
+  term.one.df<-subset(term.df, freq.dif>0)   # more in one
+  term.two.df<-subset(term.df, freq.dif<0)   # more in two 
+  term.equal.df<-subset(term.df, freq.dif==0)  # Said equally
+  ## This function takes some number as spaces and returns a vertor
+  ## of continuous values for even spacing centered around zero
+  optimal.spacing<-function(spaces) {
+    if(spaces>=1) {
+      spacing<-1/spaces
+      if(spaces%%2 > 0) {
+        lim<-spacing*floor(spaces/2)
+        return(seq(-lim,lim,spacing))
+      }
+      else {
+        lim<-spacing*(spaces-1)
+        return(seq(-lim,lim,spacing*2))
+      }
+    }
+    else {
+      return(0)
+    }
+  }
+  
+  one.spacing<-sapply(table(term.one.df$freq.dif),
+                      function(x) optimal.spacing(x))
+  two.spacing<-sapply(table(term.two.df$freq.dif),
+                    function(x) optimal.spacing(x))
+  equal.spacing<-sapply(table(term.equal.df$freq.dif),
+                        function(x) optimal.spacing(x))
+
+  term.one.df$Spacing<-as.vector(unlist(one.spacing))
+  term.two.df$Spacing<-as.vector(unlist(two.spacing))
+  term.equal.df$Spacing<-as.vector(equal.spacing)
+
+  term.one.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.one.df$term)
+  term.one.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.one.df$term)
+  
+  term.two.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.two.df$term)
+  term.two.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.two.df$term)
+  
+  term.df$Spacing <- sample(1:nrow(term.df), replace=TRUE)
+  
+  term.cloud<-ggplot(term.df, aes(x=freq.dif, y=Spacing)) +
+    geom_text(aes(size=freq.one, label=term, colour=freq.dif)) +
+##      geom_text(data=term.two.df, aes(x=freq.dif, y=Spacing, label=term, size=freq.two, color=freq.dif)) +
+##        geom_text(data=term.equal.df, aes(x=freq.dif,
+##                    y=Spacing,
+##                    label=term.equal.df$term,
+##                    size=freq.one, color=freq.dif)) +
+                      scale_size(to=c(3,11),
+                                 name="GO-annotation Frequency") +
+                                   scale_colour_gradient(low="darkred",
+                                                         high="darkblue",
+                                                         legend=FALSE)
+  mi <- min(term.two.df$freq.dif)
+  ma <- max(term.one.df$freq.dif)
+term.cloud <- term.cloud +
+    scale_x_continuous(breaks=c(mi,
+                         0, ma),
+                       labels=rev(lab))
+  term.cloud <- term.cloud + 
+    scale_y_continuous(breaks=c(0),
+                       labels=c("")) +
+                         xlab("") +
+                           ylab("")+
+                             theme_bw()+
+                               opts(panel.grid.major=theme_blank(),
+                                    panel.grid.minor=theme_blank(),
+                                    title=tit)
+return(term.cloud)
+}
+
+go.eel.vs.pop.mf <- go.word.cloud(as.character(GO.over.pop[GO.over.pop$pcf%in%"MF", "descr"]),
+                               as.character(GO.over.eel[GO.over.eel$pcf%in%"MF", "descr"]),
+                               all=FALSE, c("Enriched more in population",
+                                 "Enriched equally",
+                                 "Enriched more in host-species"),
+                               "Frequency of enriched GO-annotation terms for nematode-population vs. host-species")
+
+
+go.eel.vs.pop.bp <- go.word.cloud(as.character(GO.over.pop[GO.over.pop$pcf%in%"BP", "descr"]),
+                               as.character(GO.over.eel[GO.over.eel$pcf%in%"BP", "descr"]),
+                               all=FALSE,
+                               lab=c("Enriched more in population",
+                                 "Enriched equally",
+                                 "Enriched more in host-species"),
+                               tit="Frequency of enriched GO-annotation terms for nematode-population vs. host-species")
+
+
+
+
+@ 

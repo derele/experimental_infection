@@ -60,13 +60,18 @@ mapped.raw <- colSums(counts.frame)
 ## remove outlier sample based on the plot below
 ## counts.frame$AJ_T26F <- NULL
 ### limit to good quality for the moment:
-good.contigs <- contig.df[contig.df$AcMN, "contig"]
-counts.frame.good <- counts.frame[ rownames(counts.frame)%in%good.contigs, ]
+good.contigs <- contig.df[contig.df$Ac, "contig"]
+MN.contigs <- contig.df[contig.df$AcMN, "contig"]
+counts.frame <- counts.frame[ rownames(counts.frame)%in%good.contigs, ]
 
-mapped.good <- colSums(counts.frame.good)
+counts.frame.MN <- counts.frame[ rownames(counts.frame)%in%MN.contigs, ]
 
+co.f <- counts.frame[rowSums(counts.frame)>32, ]
+
+co.f.MN <- co.f[rownames(co.f)%in%MN.contigs,]
+
+mapped.good <- colSums(counts.frame.MN)
 map.tab <- merge(nReads, mapped.raw, by.x="library", by.y="row.names")
-
 map.tab <- merge(map.tab, mapped.good, by.x="library", by.y="row.names")
 
 <<tech.rep.plot, echo=FALSE>>=

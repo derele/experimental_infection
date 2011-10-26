@@ -12,12 +12,11 @@ goAllFrame <- GOAllFrame(goFrame)
 all.ann.mapping <- as.data.frame(cbind(pept_id=goAllFrame@data$gene_id,
                                         go_term=goAllFrame@data$go_id))
 
-
-
 over.goseq <- function(de.contigs, contigs, map){
   de <- as.integer(contigs%in%de.contigs)
   names(de) <- contigs
-  bias.data <- as.integer(contig.df$length)
+  bias.data <- as.integer(contig.df[contig.df$contig%in%rownames(counts.frame),
+                                    "length"])
   pwf <- nullp(de, bias.data=bias.data, plot.fit=FALSE) 
   go.stats <- goseq(pwf, gene2cat=map, method='Wallenius')
   GO.over <- merge(go.stats[go.stats$over_represented_pvalue<0.05,],
@@ -32,52 +31,53 @@ over.goseq <- function(de.contigs, contigs, map){
   merge(GO.over, ratio, by.x="category", by.y="row.names")
 }
 
-GO.over.sex <- over.goseq(contigs.sex,
+GO.over.sex <- over.goseq(contigs.l[[1]],
                           rownames(counts.frame),
                           ann.mapping)
-GO.over.sex.all <- over.goseq(contigs.sex,
+GO.over.sex.all <- over.goseq(contigs.l[[1]],
                               rownames(counts.frame),
                               all.ann.mapping)
 
-GO.over.eel <- over.goseq(contigs.eel,
+GO.over.eel <- over.goseq(contigs.l[[2]],
                           rownames(counts.frame),
                           ann.mapping)
-GO.over.eel.all <- over.goseq(contigs.eel,
+GO.over.eel.all <- over.goseq(contigs.l[[2]],
                               rownames(counts.frame),
                               all.ann.mapping)
 
-GO.over.pop <- over.goseq(contigs.pop,
+GO.over.pop <- over.goseq(contigs.l[[3]],
                           rownames(counts.frame),
                           ann.mapping)
-GO.over.pop.all <- over.goseq(contigs.pop,
+GO.over.pop.all <- over.goseq(contigs.l[[3]],
                               rownames(counts.frame),
                               all.ann.mapping)
 
-GO.over.sex.eel <- over.goseq(contigs.sex.eel,
+GO.over.sex.eel <- over.goseq(contigs.l[[4]],
                               rownames(counts.frame),
                               ann.mapping)
-GO.over.sex.eel.all <- over.goseq(contigs.sex.eel,
+GO.over.sex.eel.all <- over.goseq(contigs.l[[4]],
                                   rownames(counts.frame),
                                   all.ann.mapping)
 
-GO.over.sex.pop <- over.goseq(contigs.sex.pop,
+GO.over.sex.pop <- over.goseq(contigs.l[[5]],
                               rownames(counts.frame),
                               ann.mapping)
-GO.over.sex.pop.all <- over.goseq(contigs.sex.pop,
+GO.over.sex.pop.all <- over.goseq(contigs.l[[5]],
                                   rownames(counts.frame),
                                   all.ann.mapping)
 
-GO.over.eel.pop <- over.goseq(contigs.eel.pop,
+GO.over.eel.pop <- over.goseq(contigs.l[[6]],
                               rownames(counts.frame),
                               ann.mapping)
-GO.over.eel.pop.all <- over.goseq(contigs.eel.pop,
+GO.over.eel.pop.all <- over.goseq(contigs.l[[6]],
                                   rownames(counts.frame),
                                   all.ann.mapping)
 
-GO.over.sex.eel.pop <- over.goseq(contigs.sex.eel.pop,
+GO.over.sex.eel.pop <- over.goseq(contigs.l[[7]]
                                   rownames(counts.frame),
                                   ann.mapping)
-GO.over.sex.eel.pop.all <- over.goseq(contigs.sex.eel.pop,
+
+GO.over.sex.eel.pop.all <- over.goseq(contigs.l[[7]],
                                       rownames(counts.frame),
                                       all.ann.mapping)
 
@@ -86,7 +86,6 @@ GO.over.sex.eel.pop.all <- over.goseq(contigs.sex.eel.pop,
 
 ## dn.ds.all <- over.goseq(big05.AC, dn.ds.df$contig,
 ##                         all.ann.mapping[all.ann.mapping$pept_id%in%dn.ds.df$contig,])
-
 
 
 foo <- "x"
