@@ -62,6 +62,7 @@ mapped.raw <- colSums(counts.frame)
 ### limit to good quality for the moment:
 good.contigs <- contig.df[contig.df$Ac, "contig"]
 MN.contigs <- contig.df[contig.df$AcMN, "contig"]
+
 counts.frame <- counts.frame[ rownames(counts.frame)%in%good.contigs, ]
 
 counts.frame.MN <- counts.frame[ rownames(counts.frame)%in%MN.contigs, ]

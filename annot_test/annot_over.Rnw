@@ -73,7 +73,7 @@ GO.over.eel.pop.all <- over.goseq(contigs.l[[6]],
                                   rownames(counts.frame),
                                   all.ann.mapping)
 
-GO.over.sex.eel.pop <- over.goseq(contigs.l[[7]]
+GO.over.sex.eel.pop <- over.goseq(contigs.l[[7]],
                                   rownames(counts.frame),
                                   ann.mapping)
 

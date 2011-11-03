@@ -3,13 +3,6 @@ sex.conds <- factor(ifelse(grepl("M$", names(counts.frame)), "male", "female" ))
 eel.conds <- factor(ifelse(grepl("^AA", names(counts.frame)), "Aa", "Aj" ))
 pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" ))
 
-## ANTI-conditions contrasting just the replicates
-## good methods should not find significance here
-rep.conds <- paste(sex.conds, eel.conds, pop.conds)
-rep.conds[!duplicated(rep.conds)] <- "first"
-rep.conds[rep.conds!="first" & !duplicated(rep.conds)] <- "second"
-rep.conds[!rep.conds%in%c("first", "second")] <- "third"
-rep.conds <- as.factor(rep.conds)
 
 ## Male/Female
 
@@ -42,19 +35,6 @@ res.pop <- nbinomTest(cds.pop, "EU", "TW")
 
 sig.pop <- res.pop[res.pop$padj < .01 & !is.na(res.pop$padj),"id"]
 
-
-cds.rep <- newCountDataSet(co.f, rep.conds)
-cds.rep <- estimateSizeFactors(cds.rep)
-cds.rep <- estimateVarianceFunctions(cds.rep)
-res.rep1 <- nbinomTest(cds.rep, "first", "second")
-res.rep2 <- nbinomTest(cds.rep, "first", "third")
-res.rep3 <- nbinomTest(cds.rep, "second", "third")
-
-sig.rep1 <- res.rep1[res.rep1$padj < .01 & !is.na(res.rep1$padj),"id"]
-sig.rep2 <- res.rep2[res.rep2$padj < .01 & !is.na(res.rep2$padj),"id"]
-sig.rep3 <- res.rep3[res.rep3$padj < .01 & !is.na(res.rep3$padj),"id"]
-### ohh damn this is a long list of bullshit 
-sig.rep <- unique(c(sig.rep1, sig.rep2, sig.rep3))
 @ 
 
 <<DESeq.plots, echo=FALSE, results=hide>>=

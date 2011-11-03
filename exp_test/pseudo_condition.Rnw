@@ -1,0 +1,63 @@
+<<echo=FALSE, cache=TRUE>>=
+## ANTI-conditions contrasting just the replicates
+## good methods should not find significance here
+rep.conds <- as.factor(paste(sex.conds, eel.conds))
+
+
+rep.list <- list()
+set.seed(210)
+for (i in 1:6){
+  rep.list[[i]] <- rep("one", times=24)
+  r <- unlist(lapply(levels(rep.conds), function (x){
+    sample(which(rep.conds==x), 3)}))
+  rep.list[[i]][r] <- "two"
+  rep.list[[i]]
+}
+
+
+rep.tt.list <- lapply (rep.list, function (x) {
+  pseudo.conds <- as.factor(x)
+  rep.design <- model.matrix(~sex.conds*eel.conds*pseudo.conds)
+  rep.ed <- DGEList(co.f, lib.size=colSums(co.f))
+  rep.ed <- calcNormFactors(rep.ed)
+  rep.ed <- estimateGLMCommonDisp(rep.ed, design=rep.design)
+  rep.ed <- estimateGLMTrendedDisp(rep.ed, design=rep.design)
+  rep.ed <- estimateGLMTagwiseDisp(rep.ed, design=rep.design)
+  rep.glmfit <- glmFit(rep.ed, rep.design, dispersion=rep.ed$tagwise.dispersion)
+  glm.rep <- glmLRT(rep.ed, rep.glmfit, grep("pseudo", colnames(rep.glmfit$design)))
+  topTags.rep <- topTags(glm.rep, n=40000) ## set as high as the length 
+  topTags.rep <- topTags.rep[topTags.rep$table$adj.P.Val<0.05]
+  return(topTags.rep)
+})
+
+
+pseudo.df <- do.call(rbind,
+                     lapply(rep.tt.list,
+                            function (x) cbind (x$table, comparison="pseudo")))
+len.si.df <- lapply(rep.tt.list, function (x) nrow(x$table))
+pseudo.df$iteration <- unlist(sapply(1:length(len.si.df),
+                                     function (x) rep (x, times=len.si.df[[x]])))
+real.df <- cbind(topTags.l[[3]]$table, comparison="real",
+                 iteration="population")
+names(pseudo.df) <- names(real.df)
+
+all.rep.df <- rbind(pseudo.df, real.df)
+
+top50.df <- do.call(rbind, by(all.rep.df,
+                             list(all.rep.df$comparison, all.rep.df$iteration),
+                             function (x) x[1:50,]))
+
+top20.df <- do.call(rbind, by(all.rep.df,
+                             list(all.rep.df$comparison, all.rep.df$iteration),
+                             function (x) x[1:20,]))
+
+top10.df <- do.call(rbind, by(all.rep.df,
+                             list(all.rep.df$comparison, all.rep.df$iteration),
+                             function (x) x[1:10,]))
+
+
+rep.plot <- ggplot(top50.df, aes(iteration, adj.P.Val)) + geom_boxplot(outlier.size=0) + scale_y_log10()
+
+
+
+@ 

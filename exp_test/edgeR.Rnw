@@ -10,7 +10,6 @@ ed <- estimateGLMCommonDisp(ed, design=design)
 ed <- estimateGLMTrendedDisp(ed, design=design)
 ed <- estimateGLMTagwiseDisp(ed, design=design)
 
-
 ## glmfit for DGEList uding tagwise dispersion
 glmfit <- glmFit(ed, design, dispersion=ed$tagwise.dispersion)
 
@@ -37,18 +36,6 @@ topTags.l <- lapply(glm.l, function (x){
 contigs.l <- lapply(topTags.l, function (x) rownames(x$table))
 contigs.all <- unlist(contigs.l)
 
-## rep.design <- model.matrix(~sex.conds*eel.conds*rep.conds)
-## rep.ed <- DGEList(co.f, lib.size=colSums(co.f))
-## rep.ed <- calcNormFactors(ed)
-## rep.ed <- estimateGLMCommonDisp(rep.ed, design=rep.design)
-## rep.ed <- estimateGLMTrendedDisp(rep.ed, design=rep.design)
-## rep.ed <- estimateGLMTagwiseDisp(rep.ed, design=rep.design)
-## rep.glmfit <- glmFit(rep.ed, rep.design, dispersion=rep.ed$tagwise.dispersion)
-
-## glm.rep <- glmLRT(rep.ed, rep.glmfit, grep("rep", colnames(rep.glmfit$design)))
-## topTags.rep <- topTags(glm.rep, n=40000) ## set as high as the length 
-## topTags.rep <- topTags.rep[topTags.rep$table$adj.P.Val<0.05] 
-
 ## The same for MN-genes only
 ed.MN <- DGEList(co.f.MN, lib.size=colSums(co.f.MN))
 ed.MN <- calcNormFactors(ed.MN)
@@ -71,19 +58,6 @@ topTags.MN.l <- lapply(glm.MN.l, function (x){
 
 contigs.MN.l <- lapply(topTags.MN.l, function (x) rownames(x$table))
 contigs.MN.all <- unlist(contigs.MN.l)
-
-## rep.design <- model.matrix(~sex.conds*eel.conds*rep.conds)
-## rep.ed.MN <- DGEList(co.f, lib.size=colSums(co.f))
-## rep.ed.MN <- calcNormFactors(ed.MN)
-## rep.ed.MN <- estimateGLMCommonDisp(rep.ed.MN, design=rep.design)
-## rep.ed.MN <- estimateGLMTrendedDisp(rep.ed.MN, design=rep.design)
-## rep.ed.MN <- estimateGLMTagwiseDisp(rep.ed.MN, design=rep.design)
-## rep.glmfit.MN <- glmfit(rep.ed.MN, rep.design, dispersion=rep.ed.MN$tagwise.dispersion)
-
-## glm.rep <- glmLRT(rep.ed.MN, rep.glmfit.MN, grep("rep", colnames(rep.glmfit.MN$design)))
-## topTags.rep <- topTags(glm.rep, n=40000) ## set as high as the length 
-## topTags.rep <- topTags.rep[topTags.rep$table$adj.P.Val<0.05] 
-
 
 ## plot fitted vs. observed values for all contigs and libraries 
 cf <- cbind(rownames(co.f), co.f)
@@ -144,6 +118,90 @@ topTags.female <- tt.female[tt.female$table$adj.P.Val<0.05]
 all.methods.pop.contigs <- intersect(intersect(rownames(topTags.female$table),
                                                rownames(topTags.male$table)),
                                      contigs.l[[3]])
+
+
+## highlighting very interesting Cytochrome C - contigs
+cox.contigs <- contig.df[grepl("Cytochrome C oxi", contig.df$Bm.annot, ignore.case=TRUE)  , "contig"]
+
+## lapply(contigs.l, function(x) length(x[x%in%cox.contigs]))
+## Toptags.l[[3]]$table[rownames(topTags.l[[3]]$table) %in% cox.contigs, ]
+
+signif.cox.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cox.contigs &
+                                                 rownames(co.f) %in% contigs.l[[3]], ]),
+                                          eel.conds:pop.conds, mean)))
+
+signif.cox.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cox.contigs &
+                                   rownames(co.f) %in% contigs.l[[3]], ]),
+                            eel.conds:pop.conds, sum))
+
+
+total.cox.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cox.contigs, ]),
+                                             eel.conds:pop.conds, mean)))
+
+total.cox.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cox.contigs,  ]),
+                           eel.conds:pop.conds, sum))
+
+overall.cox.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cox.contigs, ]),
+                                             eel.conds:pop.conds, mean)))
+
+cox.table <- rbind(signif.cox.means, signif.cox.sums,
+                   total.cox.means, total.cox.sums)
+
+cox.t <- xtable(cox.table)
+
+
+## highlighting very interesting Cystatin
+cy.contigs <- contig.df[grepl("Cystatin", contig.df$Bm.annot, ignore.case=TRUE)  , "contig"]
+lapply(contigs.l, function(x) length(x[x%in%cy.contigs]))
+
+## Cytochrome C oxidase:
+## Toptags.l[[3]]$table[rownames(topTags.l[[3]]$table) %in% cy.contigs, ]
+
+signif.cy.means <- do.call("cbind",
+                           as.list( by(t(co.f[ rownames(co.f) %in% cy.contigs & rownames(co.f)
+                                              %in% contigs.l[[3]], ]), eel.conds:pop.conds, mean)))
+
+signif.cy.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cy.contigs &
+                                   rownames(co.f) %in% contigs.l[[3]], ]),
+                            eel.conds:pop.conds, sum))
+
+
+total.cy.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cy.contigs, ]),
+                                             eel.conds:pop.conds, mean)))
+
+total.cy.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cy.contigs,  ]),
+                           eel.conds:pop.conds, sum))
+
+cy.table <- rbind(signif.cy.means, signif.cy.sums,
+                   total.cy.means, total.cy.sums)
+cy.t <- xtable(cy.table)
+
+
+## Cuticullar collagen:
+col.contigs <- contig.df[grepl("Cuticular collagen", contig.df$Bm.annot, ignore.case=TRUE)  , "contig"]
+lapply(contigs.l, function(x) length(x[x%in%col.contigs]))
+
+## Toptags.l[[3]]$table[rownames(topTags.l[[3]]$table) %in% col.contigs, ]
+
+signif.col.means <- colSums(do.call("cbind",
+                                    as.list( by(t(co.f[ rownames(co.f) %in% col.contigs &
+                                                       rownames(co.f)%in% contigs.l[[3]], ]),
+                                                eel.conds:pop.conds, mean))))
+
+signif.col.sums <- rbind(by(t(co.f[ rownames(co.f) %in% col.contigs &
+                                   rownames(co.f) %in% contigs.l[[3]], ]),
+                            eel.conds:pop.conds, sum))
+
+total.col.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% col.contigs, ]),
+                                             eel.conds:pop.conds, mean)))
+
+total.col.sums <- rbind(by(t(co.f[ rownames(co.f) %in% col.contigs,  ]),
+                           eel.conds:pop.conds, sum))
+
+col.table <- rbind(signif.col.means, signif.col.sums,
+                   total.col.means, total.col.sums)
+col.t <- xtable(col.table)
+
 @ 
 
 <<edgeR.venns, echo=FALSE, results=hide>>=
@@ -156,24 +214,35 @@ venn.diagram(list(sex         = match(contigs.l[[1]], contigs.all),
                   sex_eel     = match(contigs.l[[4]], contigs.all),
                   sex_pop     = match(contigs.l[[5]], contigs.all),
                   sex_eel_pop = match(contigs.l[[7]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/sex_venn.png")
+             filename = "/home/ele/thesis/experimental_infection/figures/sex_venn.tiff")
 
 venn.diagram(list(eel         = match(contigs.l[[2]], contigs.all),
                   sex_eel     = match(contigs.l[[4]], contigs.all),
                   eel_pop     = match(contigs.l[[6]], contigs.all),
                   sex_eel_pop = match(contigs.l[[7]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/eel_venn.png")
+             filename = "/home/ele/thesis/experimental_infection/figures/eel_venn.tiff")
 
 venn.diagram(list(pop         = match(contigs.l[[3]], contigs.all),
                   sex_pop     = match(contigs.l[[5]], contigs.all),
                   eel_pop     = match(contigs.l[[6]], contigs.all),
                   sex_eel_pop = match(contigs.l[[7]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/pop_venn.png")
+             filename = "/home/ele/thesis/experimental_infection/figures/pop_venn.tiff")
+
+
+venn.diagram(list(eel         = match(contigs.l[[2]], contigs.l[[3]])[
+                    !is.na(match(contigs.l[[2]], contigs.l[[3]]))],
+                  sex_pop     = match(contigs.l[[5]], contigs.l[[3]])[
+                    !is.na(match(contigs.l[[5]], contigs.l[[3]]))],
+                  eel_pop     = match(contigs.l[[6]], contigs.l[[3]])[
+                    !is.na(match(contigs.l[[6]], contigs.l[[3]]))],
+                  sex_eel_pop = match(contigs.l[[7]], contigs.l[[3]])[
+                    !is.na(match(contigs.l[[7]], contigs.l[[3]]))]),
+             filename = "/home/ele/thesis/experimental_infection/figures/what_in_pop_venn.tiff")
 
 venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
                   eel_all     = match(contigs.l[[2]], contigs.all),
                   sex_all     = match(contigs.l[[1]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/combi_venn.png")
+             filename = "/home/ele/thesis/experimental_infection/figures/combi_venn.tiff")
 
 ## par(mfrow = c(1, 2))
 ## maPlot(ed$counts[, 1], ed$counts[, 2], normalize = TRUE, pch = 19,
@@ -187,6 +256,7 @@ venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
 ## maPlot(ed$counts[, 1]/eff.libsize[1], ed$counts[, 2]/eff.libsize[2],
 ##     normalize = FALSE, pch = 19, cex = 0.4, ylim = c(-8, 8))
 ## grid(col = "blue")
+
 
 @ 
 
@@ -207,14 +277,17 @@ colors <- colorRampPalette(c("white", "darkblue"))(100)
 
 gpd <- contigs.l[[3]]
 gpd <- gpd[!gpd%in%contigs.l[[1]] & !gpd%in%contigs.l[[2]]]
-gpd <- gpd[gpd%in%good.contigs]
+gpd <- gpd[gpd%in%MN.contigs]
 pop.to.plot <- vsd[gpd, ]
 
+rsc <- ifelse(rownames(pop.to.plot) %in% cox.contigs, "red", "yellow")
+csc <- ifelse(pop.conds=="EU", "green", "blue")
+
 png("/home/ele/thesis/experimental_infection/figures/pop_only_contigs_heat.png")
-heatmap(pop.to.plot, col = colors, scale = "none")
+heatmap(pop.to.plot, col = colors, scale = "none", ColSideColors=csc, RowSideColors=rsc)
 dev.off()
 
-pop.to.plot.male <- vsd[all.methods.pop.contigs, ]
+pop.to.plot <- vsd[all.methods.pop.contigs, ]
 png("/home/ele/thesis/experimental_infection/figures/all_method_pop_heat.png")
 heatmap(pop.to.plot, col = colors, scale = "none")
 dev.off()

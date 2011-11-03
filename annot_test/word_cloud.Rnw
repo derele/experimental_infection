@@ -3,74 +3,47 @@
 library(tm)
 
 go.word.cloud <- function (terms1, terms2, all, lab, tit){
-  one.termtable <- data.frame(table(terms1))
-  names(one.termtable) <- c("term", "freq.one")
-  two.termtable <- data.frame(table(terms2))
-  names(two.termtable) <- c("term", "freq.two")
+  one.termtable <- terms1[, c("descr", "over_represented_pvalue", "count")]
+  names(one.termtable) <- c("term", "p.value.1", "freq.one")
+  two.termtable <- terms2[, c("descr", "over_represented_pvalue", "count")]
+  names(two.termtable) <- c("term", "p.value.2", "freq.two")
   term.df<- merge(one.termtable, two.termtable, all=all)
   term.df[is.na(term.df$freq.one), "freq.one"] <- 0
   term.df[is.na(term.df$freq.two), "freq.two"] <- 0
-  term.df<-transform(term.df, freq.dif=freq.one-freq.two)    
-  ## Create separate data frames for each frequency type
-  term.one.df<-subset(term.df, freq.dif>0)   # more in one
-  term.two.df<-subset(term.df, freq.dif<0)   # more in two 
-  term.equal.df<-subset(term.df, freq.dif==0)  # Said equally
-  ## This function takes some number as spaces and returns a vertor
-  ## of continuous values for even spacing centered around zero
-  optimal.spacing<-function(spaces) {
-    if(spaces>=1) {
-      spacing<-1/spaces
-      if(spaces%%2 > 0) {
-        lim<-spacing*floor(spaces/2)
-        return(seq(-lim,lim,spacing))
-      }
-      else {
-        lim<-spacing*(spaces-1)
-        return(seq(-lim,lim,spacing*2))
-      }
-    }
-    else {
-      return(0)
-    }
-  }
-  
-  one.spacing<-sapply(table(term.one.df$freq.dif),
-                      function(x) optimal.spacing(x))
-  two.spacing<-sapply(table(term.two.df$freq.dif),
-                    function(x) optimal.spacing(x))
-  equal.spacing<-sapply(table(term.equal.df$freq.dif),
-                        function(x) optimal.spacing(x))
+  term.df<-transform(term.df, freq.dif = freq.one-freq.two)
+  term.df$p.value <- ifelse(term.df$freq.dif<0, term.df$p.value.2,
+                            term.df$p.value.1)
 
-  term.one.df$Spacing<-as.vector(unlist(one.spacing))
-  term.two.df$Spacing<-as.vector(unlist(two.spacing))
-  term.equal.df$Spacing<-as.vector(equal.spacing)
+  mi <- min(term.df$freq.dif)
+  ma <- max(term.df$freq.dif)
+  m <- mean(c(mi,ma))
+  
+  term.df <- term.df[order(term.df$freq.dif),]
+  ## the occurence of the frequence difference
+  occ <- rle(term.df$freq.dif)$length
+  ## equal spread between min and may
+  term.df$Spacing <- unlist(sapply(occ,
+                                   function(x) seq(mi, ma, length=x)))
+  ## patch the values where only one thing was there with mean
+  term.df[term.df$Spacing==mi, "Spacing"] <- m
 
-  term.one.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.one.df$term)
-  term.one.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.one.df$term)
-  
-  term.two.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.two.df$term)
-  term.two.df$term <- gsub("(\\S{7,}) ", "\\1\n",  term.two.df$term)
-  
-  term.df$Spacing <- sample(1:nrow(term.df), replace=TRUE)
+  ## break long names
+   term.df$term <- sub("(\\w{12,}) ", "\\1\n",  term.df$term)
   
   term.cloud<-ggplot(term.df, aes(x=freq.dif, y=Spacing)) +
-    geom_text(aes(size=freq.one, label=term, colour=freq.dif)) +
-##      geom_text(data=term.two.df, aes(x=freq.dif, y=Spacing, label=term, size=freq.two, color=freq.dif)) +
-##        geom_text(data=term.equal.df, aes(x=freq.dif,
-##                    y=Spacing,
-##                    label=term.equal.df$term,
-##                    size=freq.one, color=freq.dif)) +
-                      scale_size(to=c(3,11),
-                                 name="GO-annotation Frequency") +
-                                   scale_colour_gradient(low="darkred",
-                                                         high="darkblue",
-                                                         legend=FALSE)
-  mi <- min(term.two.df$freq.dif)
-  ma <- max(term.one.df$freq.dif)
-term.cloud <- term.cloud +
-    scale_x_continuous(breaks=c(mi,
-                         0, ma),
-                       labels=rev(lab))
+    geom_text(aes(size=freq.one, label=term, colour=p.value)) +
+      scale_size(to=c(3,11),
+                 name="GO-annotation Frequency") +
+                   scale_colour_gradient("p-value for overrepresentation",
+                                         breaks=c(0.001, 0.01, 0.02, 0.03, 0.04),
+                                         low="darkred",
+                                         high="darkblue"
+                                         )
+  ## aesthetic corrections
+  term.cloud <- term.cloud +
+    scale_x_continuous(breaks=c(mi, 0, ma), labels=rev(lab))
+
+  ## aesthetic corrections
   term.cloud <- term.cloud + 
     scale_y_continuous(breaks=c(0),
                        labels=c("")) +
@@ -80,26 +53,41 @@ term.cloud <- term.cloud +
                                opts(panel.grid.major=theme_blank(),
                                     panel.grid.minor=theme_blank(),
                                     title=tit)
-return(term.cloud)
+ return(term.cloud)
 }
 
-go.eel.vs.pop.mf <- go.word.cloud(as.character(GO.over.pop[GO.over.pop$pcf%in%"MF", "descr"]),
-                               as.character(GO.over.eel[GO.over.eel$pcf%in%"MF", "descr"]),
-                               all=FALSE, c("Enriched more in population",
-                                 "Enriched equally",
-                                 "Enriched more in host-species"),
-                               "Frequency of enriched GO-annotation terms for nematode-population vs. host-species")
+GO.op <- GO.over.pop[!duplicated(GO.over.pop$category), ]
+GO.oe <- GO.over.eel[!duplicated(GO.over.eel$category), ]
+
+go.eel.vs.pop.mf <- go.word.cloud(GO.op[GO.op$pcf%in%"MF",],
+                                  GO.oe[GO.oe$pcf%in%"MF", ],
+                                  all=FALSE, c("Enriched more in population differences",
+                                    "\nEnriched equally",
+                                    "Enriched more in host-species differences"),
+                                  "Frequency of enriched molecular function GO-terms for nematode-population vs. host-species")
+
+ggsave("/home/ele/thesis/experimental_infection/figures/word_cloud_eel_vs_pop_mf.png", go.eel.vs.pop.mf, width=22, height=8)
 
 
-go.eel.vs.pop.bp <- go.word.cloud(as.character(GO.over.pop[GO.over.pop$pcf%in%"BP", "descr"]),
-                               as.character(GO.over.eel[GO.over.eel$pcf%in%"BP", "descr"]),
+go.eel.vs.pop.bp <- go.word.cloud(GO.op[GO.op$pcf%in%"BP", ],
+                                  GO.oe[GO.oe$pcf%in%"BP", ],
                                all=FALSE,
-                               lab=c("Enriched more in population",
-                                 "Enriched equally",
-                                 "Enriched more in host-species"),
-                               tit="Frequency of enriched GO-annotation terms for nematode-population vs. host-species")
+                                  lab=c("Enriched more in population differences",
+                                    "Enriched equally",
+                                    "Enriched more in host-species differences"),
+                                  tit="Frequency of enriched GO-annotation terms for nematode-population vs. host-bspecies differences")
 
+ggsave("/home/ele/thesis/experimental_infection/figures/word_cloud_eel_vs_pop_bp.png", go.eel.vs.pop.bp, width=22, height=8)
 
+go.eel.vs.pop.cc <- go.word.cloud(GO.op[GO.op$pcf%in%"CC", ],
+                                  GO.oe[GO.oe$pcf%in%"CC", ],
+                                  all=FALSE,
+                                  lab=c("Enriched more in population differences",
+                                    "\nEnriched equally",
+                                    "Enriched more in host-species differences"),
+                                  tit="Frequency of enriched GO-annotation terms for nematode-population vs. host-species differences")
+
+ggsave("/home/ele/thesis/experimental_infection/figures/word_cloud_eel_vs_pop_cc.png", go.eel.vs.pop.cc, width=22, height=8)
 
 
 @ 

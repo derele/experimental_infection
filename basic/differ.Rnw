@@ -55,13 +55,13 @@ gbar <- ggplot(AMS, aes(x= stage, y=mean.value,
                         label=paste("n=", sample.n, sep=""))) +
   geom_bar(stat="identity") +
   geom_errorbar(limits) +
-  facet_grid(species ~ population) +
+  facet_grid(population ~ species) +
   coord_flip() +
   theme_bw() +
   scale_x_discrete("Stage") +
   scale_y_continuous("Mean recovery (individuals)") +
   geom_text(x=1, y=5)+
-  opts(strip.text.y = theme_text(face="italic", angle=-90)) 
+  opts(strip.text.x = theme_text(face="italic")) 
 @ 
 
 <<stages.plot, echo=FALSE>>=
