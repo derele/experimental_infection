@@ -8,7 +8,7 @@ pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" 
 
 cds.mf <- newCountDataSet(co.f, sex.conds)
 cds.mf <- estimateSizeFactors(cds.mf)
-cds.mf <- estimateVarianceFunctions(cds.mf)
+cds.mf <- estimateDispersons(cds.mf)
 res.mf <- nbinomTest(cds.mf, "male", "female")
 
 vsd <- getVarianceStabilizedData( cds.mf )

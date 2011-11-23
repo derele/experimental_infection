@@ -119,89 +119,6 @@ all.methods.pop.contigs <- intersect(intersect(rownames(topTags.female$table),
                                                rownames(topTags.male$table)),
                                      contigs.l[[3]])
 
-
-## highlighting very interesting Cytochrome C - contigs
-cox.contigs <- contig.df[grepl("Cytochrome C oxi", contig.df$Bm.annot, ignore.case=TRUE)  , "contig"]
-
-## lapply(contigs.l, function(x) length(x[x%in%cox.contigs]))
-## Toptags.l[[3]]$table[rownames(topTags.l[[3]]$table) %in% cox.contigs, ]
-
-signif.cox.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cox.contigs &
-                                                 rownames(co.f) %in% contigs.l[[3]], ]),
-                                          eel.conds:pop.conds, mean)))
-
-signif.cox.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cox.contigs &
-                                   rownames(co.f) %in% contigs.l[[3]], ]),
-                            eel.conds:pop.conds, sum))
-
-
-total.cox.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cox.contigs, ]),
-                                             eel.conds:pop.conds, mean)))
-
-total.cox.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cox.contigs,  ]),
-                           eel.conds:pop.conds, sum))
-
-overall.cox.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cox.contigs, ]),
-                                             eel.conds:pop.conds, mean)))
-
-cox.table <- rbind(signif.cox.means, signif.cox.sums,
-                   total.cox.means, total.cox.sums)
-
-cox.t <- xtable(cox.table)
-
-
-## highlighting very interesting Cystatin
-cy.contigs <- contig.df[grepl("Cystatin", contig.df$Bm.annot, ignore.case=TRUE)  , "contig"]
-lapply(contigs.l, function(x) length(x[x%in%cy.contigs]))
-
-## Cytochrome C oxidase:
-## Toptags.l[[3]]$table[rownames(topTags.l[[3]]$table) %in% cy.contigs, ]
-
-signif.cy.means <- do.call("cbind",
-                           as.list( by(t(co.f[ rownames(co.f) %in% cy.contigs & rownames(co.f)
-                                              %in% contigs.l[[3]], ]), eel.conds:pop.conds, mean)))
-
-signif.cy.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cy.contigs &
-                                   rownames(co.f) %in% contigs.l[[3]], ]),
-                            eel.conds:pop.conds, sum))
-
-
-total.cy.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% cy.contigs, ]),
-                                             eel.conds:pop.conds, mean)))
-
-total.cy.sums <- rbind(by(t(co.f[ rownames(co.f) %in% cy.contigs,  ]),
-                           eel.conds:pop.conds, sum))
-
-cy.table <- rbind(signif.cy.means, signif.cy.sums,
-                   total.cy.means, total.cy.sums)
-cy.t <- xtable(cy.table)
-
-
-## Cuticullar collagen:
-col.contigs <- contig.df[grepl("Cuticular collagen", contig.df$Bm.annot, ignore.case=TRUE)  , "contig"]
-lapply(contigs.l, function(x) length(x[x%in%col.contigs]))
-
-## Toptags.l[[3]]$table[rownames(topTags.l[[3]]$table) %in% col.contigs, ]
-
-signif.col.means <- colSums(do.call("cbind",
-                                    as.list( by(t(co.f[ rownames(co.f) %in% col.contigs &
-                                                       rownames(co.f)%in% contigs.l[[3]], ]),
-                                                eel.conds:pop.conds, mean))))
-
-signif.col.sums <- rbind(by(t(co.f[ rownames(co.f) %in% col.contigs &
-                                   rownames(co.f) %in% contigs.l[[3]], ]),
-                            eel.conds:pop.conds, sum))
-
-total.col.means <- rowSums(do.call("rbind", by(t(co.f[ rownames(co.f) %in% col.contigs, ]),
-                                             eel.conds:pop.conds, mean)))
-
-total.col.sums <- rbind(by(t(co.f[ rownames(co.f) %in% col.contigs,  ]),
-                           eel.conds:pop.conds, sum))
-
-col.table <- rbind(signif.col.means, signif.col.sums,
-                   total.col.means, total.col.sums)
-col.t <- xtable(col.table)
-
 @ 
 
 <<edgeR.venns, echo=FALSE, results=hide>>=
@@ -228,15 +145,10 @@ venn.diagram(list(pop         = match(contigs.l[[3]], contigs.all),
                   sex_eel_pop = match(contigs.l[[7]], contigs.all)),
              filename = "/home/ele/thesis/experimental_infection/figures/pop_venn.tiff")
 
-
-venn.diagram(list(eel         = match(contigs.l[[2]], contigs.l[[3]])[
-                    !is.na(match(contigs.l[[2]], contigs.l[[3]]))],
-                  sex_pop     = match(contigs.l[[5]], contigs.l[[3]])[
-                    !is.na(match(contigs.l[[5]], contigs.l[[3]]))],
-                  eel_pop     = match(contigs.l[[6]], contigs.l[[3]])[
-                    !is.na(match(contigs.l[[6]], contigs.l[[3]]))],
-                  sex_eel_pop = match(contigs.l[[7]], contigs.l[[3]])[
-                    !is.na(match(contigs.l[[7]], contigs.l[[3]]))]),
+venn.diagram(list(pop         = match(contigs.l[[3]], contigs.all),
+                  eel         = match(contigs.l[[2]], contigs.all)),
+                  sex_pop     = match(contigs.l[[5]], contigs.all),
+                  eel_pop     = match(contigs.l[[6]], contigs.all),
              filename = "/home/ele/thesis/experimental_infection/figures/what_in_pop_venn.tiff")
 
 venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
@@ -273,29 +185,52 @@ dev.off()
 @ 
   
 <<edgeR.heat, echo=FALSE>>=
+
+cox1.contigs <- contig.df[grepl("Cytochrome C oxidase subunit 1", contig.df$Bm.annot, ignore.case=TRUE) |
+                         grepl("Cytochrome C oxidase subunit 1", contig.df$Ce.annot, ignore.case=TRUE) |
+                         grepl("Cytochrome C oxidase subunit 1", contig.df$nr.uniprot.annot, ignore.case=TRUE),
+                         "contig"]
+cox2.contigs <- contig.df[grepl("Cytochrome C oxidase subunit 2", contig.df$Bm.annot, ignore.case=TRUE) |
+                         grepl("Cytochrome C oxidase subunit 2", contig.df$Ce.annot, ignore.case=TRUE) |
+                         grepl("Cytochrome C oxidase subunit 2", contig.df$nr.uniprot.annot, ignore.case=TRUE),
+                         "contig"]
+
 colors <- colorRampPalette(c("white", "darkblue"))(100)
 
 gpd <- contigs.l[[3]]
 gpd <- gpd[!gpd%in%contigs.l[[1]] & !gpd%in%contigs.l[[2]]]
-gpd <- gpd[gpd%in%MN.contigs]
+## gpd <- gpd[gpd%in%MN.contigs]
 pop.to.plot <- vsd[gpd, ]
+pop.to.plot <- pop.to.plot[, c(grep("EU", pop.conds), grep("TW", pop.conds))]
 
-rsc <- ifelse(rownames(pop.to.plot) %in% cox.contigs, "red", "yellow")
-csc <- ifelse(pop.conds=="EU", "green", "blue")
 
-png("/home/ele/thesis/experimental_infection/figures/pop_only_contigs_heat.png")
-heatmap(pop.to.plot, col = colors, scale = "none", ColSideColors=csc, RowSideColors=rsc)
+rsc <- ifelse(rownames(pop.to.plot) %in% cox1.contigs, "red",
+              ifelse(rownames(pop.to.plot) %in% cox2.contigs, "red4", "yellow"))
+
+csc <- ifelse(grepl("A\\w_R", colnames(pop.to.plot)), "green", "blue")
+
+png("/home/ele/thesis/experimental_infection/figures/pop_only_contigs_heat.png", res=100)
+heatmap(pop.to.plot, col = colors, scale = "none",
+        ColSideColors=csc, RowSideColors=rsc)
 dev.off()
 
 pop.to.plot <- vsd[all.methods.pop.contigs, ]
-png("/home/ele/thesis/experimental_infection/figures/all_method_pop_heat.png")
-heatmap(pop.to.plot, col = colors, scale = "none")
+pop.to.plot <- pop.to.plot[, c(grep("EU", pop.conds), grep("TW", pop.conds))]
+
+rsc <- ifelse(rownames(pop.to.plot) %in% cox1.contigs, "red",
+              ifelse(rownames(pop.to.plot) %in% cox2.contigs, "red4", "yellow"))
+
+
+csc <- ifelse(grepl("A\\w_R", colnames(pop.to.plot)), "green", "blue")
+
+png("/home/ele/thesis/experimental_infection/figures/all_method_pop_heat.png", res=100)
+heatmap(pop.to.plot, col = colors, scale = "none",
+        ColSideColors=csc, RowSideColors=rsc)
 dev.off()
 
-pop.to.plot.male <- vsd[rownames(topTags.male$table), sex.conds=="male" ]
-png("/home/ele/thesis/experimental_infection/figures/male_pop_contigs_heat.png")
-heatmap(pop.to.plot.male, col = colors, scale = "none")
-dev.off()
+## png("/home/ele/thesis/experimental_infection/figures/male_pop_contigs_heat.png")
+## heatmap(pop.to.plot.male, col = colors, scale = "none")
+## dev.off()
 
 @ 
 

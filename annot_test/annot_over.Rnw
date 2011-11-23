@@ -8,6 +8,10 @@ goframeData <- as.data.frame(cbind(frame.go_id=ann.mapping$go_term,
                                    frame.Evidence="IEA",
                                    frame.gene_id=ann.mapping$pept_id))
 goFrame <- GOFrame(goframeData, organism="Anguillicola crassus")
+
+## This should work to produce somethin similar to GSEA , traversing
+## through all GO levels, but it somehow doesn't
+
 goAllFrame <- GOAllFrame(goFrame)
 all.ann.mapping <- as.data.frame(cbind(pept_id=goAllFrame@data$gene_id,
                                         go_term=goAllFrame@data$go_id))
@@ -34,92 +38,68 @@ over.goseq <- function(de.contigs, contigs, map){
 GO.over.sex <- over.goseq(contigs.l[[1]],
                           rownames(counts.frame),
                           ann.mapping)
-GO.over.sex.all <- over.goseq(contigs.l[[1]],
-                              rownames(counts.frame),
-                              all.ann.mapping)
-
 GO.over.eel <- over.goseq(contigs.l[[2]],
                           rownames(counts.frame),
                           ann.mapping)
-GO.over.eel.all <- over.goseq(contigs.l[[2]],
-                              rownames(counts.frame),
-                              all.ann.mapping)
-
 GO.over.pop <- over.goseq(contigs.l[[3]],
                           rownames(counts.frame),
                           ann.mapping)
-GO.over.pop.all <- over.goseq(contigs.l[[3]],
-                              rownames(counts.frame),
-                              all.ann.mapping)
-
 GO.over.sex.eel <- over.goseq(contigs.l[[4]],
                               rownames(counts.frame),
                               ann.mapping)
-GO.over.sex.eel.all <- over.goseq(contigs.l[[4]],
-                                  rownames(counts.frame),
-                                  all.ann.mapping)
-
 GO.over.sex.pop <- over.goseq(contigs.l[[5]],
                               rownames(counts.frame),
                               ann.mapping)
-GO.over.sex.pop.all <- over.goseq(contigs.l[[5]],
-                                  rownames(counts.frame),
-                                  all.ann.mapping)
-
 GO.over.eel.pop <- over.goseq(contigs.l[[6]],
                               rownames(counts.frame),
                               ann.mapping)
-GO.over.eel.pop.all <- over.goseq(contigs.l[[6]],
-                                  rownames(counts.frame),
-                                  all.ann.mapping)
-
 GO.over.sex.eel.pop <- over.goseq(contigs.l[[7]],
                                   rownames(counts.frame),
                                   ann.mapping)
 
-GO.over.sex.eel.pop.all <- over.goseq(contigs.l[[7]],
-                                      rownames(counts.frame),
-                                      all.ann.mapping)
+blast.annot.in <- function (annot.regex){
+  
+  contig.df[grepl(paste("^", annot.regex, "$", sep=""), contig.df$contig) |
+            grepl(annot.regex, contig.df$Bm.annot, ignore.case=TRUE) |
+            grepl(annot.regex, contig.df$Ce.annot, ignore.case=TRUE) |
+            grepl(annot.regex, contig.df$nr.uniprot.annot, ignore.case=TRUE),
+            c("contig", "Bm.annot", "Bm.bit", "Ce.annot", "Ce.bit", "nr.uniprot.annot", "nr.bit")]
+}
 
-## repeat some of the dn.ds overrepresentation in 454
-## dn.ds <- over.goseq(big05.AC, dn.ds.df$contig, ann.mapping)
+## specific annotation counts-highlighting
+get.annot.count.table <- function (annot.regex){
+  contigs <- contig.df[grepl(annot.regex, contig.df$Bm.annot, ignore.case=TRUE) |
+                       grepl(annot.regex, contig.df$Ce.annot, ignore.case=TRUE) |
+                       grepl(annot.regex, contig.df$nr.uniprot.annot, ignore.case=TRUE),
+                       "contig"]
 
-## dn.ds.all <- over.goseq(big05.AC, dn.ds.df$contig,
-##                         all.ann.mapping[all.ann.mapping$pept_id%in%dn.ds.df$contig,])
+  counts <- co.f[rownames(co.f)%in%contigs,]
+  signif.counts <- co.f[rownames(co.f)%in%contigs &
+                        rownames(co.f)%in%contigs.l[[3]],]
 
+  signif.means <- tapply(t(colSums(signif.counts)), eel.conds:pop.conds, mean)
+  signif.sums <- tapply(t(colSums(signif.counts)), eel.conds:pop.conds, sum)
+  total.means <- tapply(t(colSums(counts)), eel.conds:pop.conds, mean)
+  total.sums <-  tapply(t(colSums(counts)), eel.conds:pop.conds, sum)
 
-foo <- "x"
+  rbind(signif.means, signif.sums, total.means, total.sums)
+}
 
-## an alternative way to summarize
-## 
+## highlighting very interesting Cytochrome C - contigs:
+cox.table <- get.annot.count.table("Cytochrome C oxidase subunit")
+cox.tab <- xtable(cox.tab)
 
+## highlighting very interesting Cystatin:
+cy.table <- get.annot.count.table("Cystatin")
+cy.tab <- xtable(cy.table)
 
-## Old style
-## ## Sex
-## GO.sex.mf <- test.over.under.GOstats(ann, 
-##                                      contigs.sex, "MF")
-## GO.sex.bp <- test.over.under.GOstats(ann, 
-##                                      contigs.sex, "BP")
-## ## response <- GO.annot[GO.annot$go_term%in%"GO:0052572", "pept_id"]
-## GO.sex.cc <- test.over.under.GOstats(ann, 
-##                                      contigs.sex, "CC")
+## Cuticullar collagen:
+col.table <- get.annot.count.table("Cutic.* collagen")
+col.t <- xtable(col.table)
 
-## ## Population
-## GO.pop.mf <- test.over.under.GOstats(ann, 
-##                                      contigs.pop, "MF")
-## GO.pop.bp <- test.over.under.GOstats(ann, 
-##                                      contigs.pop, "BP")
-## ## response <- GO.annot[GO.annot$go_term%in%"GO:0052572", "pept_id"]
-## GO.pop.cc <- test.over.under.GOstats(ann, 
-##                                      contigs.pop, "CC")
+col7.table <- get.annot.count.table("Cuticle collagen 7")
 
-## ## Host species
-## GO.eel.mf <- test.over.under.GOstats(ann, 
-##                                      contigs.eel, "MF")
-## GO.eel.bp <- test.over.under.GOstats(ann, 
-##                                      contigs.eel, "BP")
-## GO.eel.cc <- test.over.under.GOstats(ann, 
-##                                      contigs.eel, "CC")
-
-
-@ 
+nadh.table <- get.annot.count.table("NADH dehydrogenase")
+nadh1.table <- get.annot.count.table("NADH dehydrogenase ND1|NADH dehydrogenase subunit 1")
+nadh4.table <- get.annot.count.table("NADH dehydrogenase ND4|NADH dehydrogenase subunit 4")
+nadh5.table <- get.annot.count.table("NADH dehydrogenase ND5|NADH dehydrogenase subunit 5")

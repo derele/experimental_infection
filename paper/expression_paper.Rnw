@@ -243,8 +243,9 @@ library(goseq)
 library(GSEABase)
 library(GO.db)
 
-load("/home/ele/thesis/454/paper/paper.Rdata")
 source("/home/ele/thesis/454/common_R_functions.R")
+
+load("/home/ele/thesis/454/paper/paper.Rdata")
 @ 
 
 \SweaveInput{../basic/differ.Rnw}
@@ -262,6 +263,7 @@ The gene expression does too
 \SweaveInput{../exp_test/edgeR.Rnw}
 
 %% \SweaveInput{../annot_test/annot_over.Rnw}
+
 
 
 <<save, echo=FALSE, results=hide>>=
