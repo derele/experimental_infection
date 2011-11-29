@@ -16,7 +16,6 @@ files <- list.files("/home/ele/Data/RNAseq/mapping/", "*.bam$")
 ## aligns <- readBamGappedAlignments("/home/ele/Data/RNAseq/mapping/AJ_T19M_1.bam")
 ## ie. bam <- scanBam("/home/ele/Data/RNAseq/mapping/AJ_T19M_1.bam", param=param)
 
-
 countsList <- list()
 for (fi in files) {
   bam <- scanBam(paste("/home/ele/Data/RNAseq/mapping/", fi, sep=""), param=param)
@@ -57,28 +56,39 @@ counts.frame <- as.data.frame(tapply(counts.frame.long$value,
 mapped.raw <- colSums(counts.frame)
 
 ## use counts frame for all calculations
-## remove outlier sample based on the plot below
-## counts.frame$AJ_T26F <- NULL
 ### limit to good quality for the moment:
-good.contigs <- contig.df[contig.df$Ac, "contig"]
+Ac.contigs <- contig.df[contig.df$Ac, "contig"]
+counts.frame <- subset(counts.frame,
+                       rownames(counts.frame)%in%Ac.contigs)
+mapped.tax <- colSums(counts.frame)
+
 MN.contigs <- contig.df[contig.df$AcMN, "contig"]
+co.f <- subset(counts.frame,
+               rownames(counts.frame)%in%MN.contigs &
+               rowSums(counts.frame)>32)
+mapped.good <- colSums(co.f)
 
-counts.frame <- counts.frame[ rownames(counts.frame)%in%good.contigs, ]
-
-counts.frame.MN <- counts.frame[ rownames(counts.frame)%in%MN.contigs, ]
-
-co.f <- counts.frame[rowSums(counts.frame)>32, ]
-
-co.f.MN <- co.f[rownames(co.f)%in%MN.contigs,]
-
-mapped.good <- colSums(counts.frame.MN)
 map.tab <- merge(nReads, mapped.raw, by.x="library", by.y="row.names")
+names(map.tab)[ncol(map.tab)] <- "raw.mapped"
+
+map.tab <- merge(map.tab, mapped.tax, by.x="library", by.y="row.names")
+names(map.tab)[ncol(map.tab)] <- "tax.mapped"
+
 map.tab <- merge(map.tab, mapped.good, by.x="library", by.y="row.names")
+names(map.tab)[ncol(map.tab)] <- "screened"
+
+sex.conds <- factor(ifelse(grepl("M$", names(counts.frame)), "male", "female" ))
+eel.conds <- factor(ifelse(grepl("^AA", names(counts.frame)), "Aa", "Aj" ))
+pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" ))
+
+hmcol <- colorRampPalette(brewer.pal(8, "PiYG"))(256)
+heat.raw.idist <- heatmap_2(idists.raw ,  col=hmcol, legend=3)
+@ 
 
 <<tech.rep.plot, echo=FALSE>>=
 ## check that all tech-reps are clustering, m/f are clustering, etc...
 png("../figures/heat_tech_rep.png", width=720, height=720)
-heatmap(idists.raw , symm=TRUE, margins = c (7,7))
+plot(heat_raw_idis)
 dev.off()
 @ 
 

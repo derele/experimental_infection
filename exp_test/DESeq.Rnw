@@ -1,46 +1,66 @@
 <<DESeq, echo=FALSE, cache=TRUE>>=
-sex.conds <- factor(ifelse(grepl("M$", names(counts.frame)), "male", "female" ))
-eel.conds <- factor(ifelse(grepl("^AA", names(counts.frame)), "Aa", "Aj" ))
-pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" ))
-
 
 ## Male/Female
 
-cds.mf <- newCountDataSet(co.f, sex.conds)
-cds.mf <- estimateSizeFactors(cds.mf)
-cds.mf <- estimateDispersons(cds.mf)
-res.mf <- nbinomTest(cds.mf, "male", "female")
+cds.sex <- newCountDataSet(co.f, sex.conds)
+cds.sex <- estimateSizeFactors(cds.sex)
+cds.sex <- estimateVarianceFunctions(cds.sex)
+res.sex <- nbinomTest(cds.sex, "male", "female")
 
-vsd <- getVarianceStabilizedData( cds.mf )
+vsd <- getVarianceStabilizedData( cds.sex )
 dists <- dist( t( vsd ) )
 idists <- as.matrix(dists)
 
-sig.mf <- res.mf[res.mf$padj < .01 & !is.na(res.mf$padj),"id"]
+sig.sex <- res.sex[res.sex$padj < .01 & !is.na(res.sex$padj),"id"]
 
-## Eel
-
+## Eel first total, then seperate for male and female
 cds.eel <- newCountDataSet(co.f, eel.conds)
 cds.eel <- estimateSizeFactors(cds.eel)
 cds.eel <- estimateVarianceFunctions(cds.eel)
 res.eel <- nbinomTest(cds.eel, "Aa", "Aj")
-
 sig.eel <- res.eel[res.eel$padj < .01 & !is.na(res.eel$padj),"id"]
 
-## Populations
+cds.eel.male <- newCountDataSet(co.f[,sex.conds%in%"male"], eel.conds[sex.conds%in%"male"])
+cds.eel.male <- estimateSizeFactors(cds.eel.male)
+cds.eel.male <- estimateVarianceFunctions(cds.eel.male)
+res.eel.male <- nbinomTest(cds.eel.male, "Aa", "Aj")
+sig.eel.male <- res.eel.male[res.eel.male$padj < .01 & !is.na(res.eel.male$padj),"id"]
 
+cds.eel.female <- newCountDataSet(co.f[,sex.conds%in%"female"], eel.conds[sex.conds%in%"female"])
+cds.eel.female <- estimateSizeFactors(cds.eel.female)
+cds.eel.female <- estimateVarianceFunctions(cds.eel.female)
+res.eel.female <- nbinomTest(cds.eel.female, "Aa", "Aj")
+sig.eel.female <- res.eel.female[res.eel.female$padj < .01 & !is.na(res.eel.female$padj),"id"]
+
+## Populations first total, then seperate for male and female
 cds.pop <- newCountDataSet(co.f, pop.conds)
 cds.pop <- estimateSizeFactors(cds.pop)
 cds.pop <- estimateVarianceFunctions(cds.pop)
 res.pop <- nbinomTest(cds.pop, "EU", "TW")
-
 sig.pop <- res.pop[res.pop$padj < .01 & !is.na(res.pop$padj),"id"]
 
-@ 
+cds.pop.male <- newCountDataSet(co.f[,sex.conds%in%"male"], pop.conds[sex.conds%in%"male"])
+cds.pop.male <- estimateSizeFactors(cds.pop.male)
+cds.pop.male <- estimateVarianceFunctions(cds.pop.male)
+res.pop.male <- nbinomTest(cds.pop.male, "EU", "TW")
+sig.pop.male <- res.pop.male[res.pop.male$padj < .01 & !is.na(res.pop.male$padj),"id"]
+
+cds.pop.female <- newCountDataSet(co.f[,sex.conds%in%"female"], pop.conds[sex.conds%in%"female"])
+cds.pop.female <- estimateSizeFactors(cds.pop.female)
+cds.pop.female <- estimateVarianceFunctions(cds.pop.female)
+res.pop.female <- nbinomTest(cds.pop.female, "EU", "TW")
+sig.pop.female <- res.pop.female[res.pop.female$padj < .01 & !is.na(res.pop.female$padj),"id"]
+
+
+## contig.df[contig.df$contig%in%intersect(sig.pop.female, sig.pop.male),
+##           grepl("annot" , names(contig.df))]
+
+## contig.df[contig.df$contig%in%c(sig.eel.female, sig.eel.male),
+##           grepl("annot" , names(contig.df))]
 
 <<DESeq.plots, echo=FALSE, results=hide>>=
 ## check that m/f are clustering, etc...
 png("../figures/heat_rep.png", width=720, height=720)
-heatmap (idists , symm=TRUE, margins = c (7,7))
 dev.off()
 
 ## Worm Sex

@@ -63,8 +63,8 @@ SU <- rbind(SU, cbind(E[E$A.No=="AJ/T-5",], prepsex="female",
 
 ### NOT SURE ABOUT THIS CONC SOO LOW
 
-SU <- rbind(SU, cbind(E[E$A.No=="AJ/T-4",], prepsex="female",
-                     prepnum=1, prepconc=2.8))
+SU <- rbind(SU, cbind(E[E$A.No=="AJ/T-26",], prepsex="female",
+                     prepnum=1, prepconc=2.4))
 
 ## AJ/T M
 
@@ -97,5 +97,10 @@ SU <- rbind(SU, cbind(E[E$A.No=="AJ/R-3",], prepsex="male",
 SU <- rbind(SU, cbind(E[E$A.No=="AJ/R-5",], prepsex="male",
                      prepnum=1, prepconc=2.23))
 
+
+SU$label <- gsub("-", "",
+                 paste(SU$A.No., substr(toupper(SU$prepsex), 1,1), sep=""))
+
+SU.present <- SU[,c("label", "prepsex", "A.spec", "L.population", "intensity", "prepnum", "prepconc")]
 
 @ 

@@ -1,0 +1,108 @@
+<<BM.sum, echo=FALSE, cach=TRUE, results=hide>>=
+
+
+BM <- merge(contig.df[,c("contig", "Bm.hit")],
+            counts.frame, by.x = "contig", by.y = "row.names")
+
+BM <- BM[!is.na(BM$Bm.hit),]
+BM <- do.call("rbind", by(BM, BM$Bm.hit, function (x) colSums(x[,3:length(BM)])))
+BM <- subset(BM, rowSums(BM)>48)
+
+
+BM.mf <- newCountDataSet(BM, sex.conds)
+BM.mf <- estimateSizeFactors(BM.mf)
+BM.mf <- estimateVarianceFunctions(BM.mf)
+res.mf <- nbinomTest(BM.mf, "male", "female")
+
+BM.vsd <- getVarianceStabilizedData( BM.mf )
+BM.dists <- dist( t( BM.vsd ) )
+BM.idists <- as.matrix(BM.dists)
+
+
+BM.ed <- DGEList(BM, lib.size=colSums(BM))
+BM.ed <- calcNormFactors(BM.ed)
+BM.ed <- estimateGLMCommonDisp(BM.ed, design=design)
+BM.ed <- estimateGLMTrendedDisp(BM.ed, design=design)
+BM.ed <- estimateGLMTagwiseDisp(BM.ed, design=design)
+
+## glmfit for DGEList uding tagwise dispersion
+BM.glmfit <- glmFit(BM.ed, design, dispersion=BM.ed$tagwise.dispersion)
+
+BM.glm.l <- glm.wrapper(BM.ed, BM.glmfit, combi.conds)
+
+
+BM.topTags.l <- lapply(BM.glm.l, function (x){
+  tt <- topTags(x, n=40000) ## set as high as the length 
+  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+})
+
+BM.orthologs.l <- lapply(BM.topTags.l, function (x) rownames(x$table))
+
+
+BM.see <- merge(as.data.frame(BM.topTags.l[[3]]$table),
+                contig.df[!duplicated(contig.df$Bm.hit),c("Bm.hit", "Bm.annot")],
+                by.y="Bm.hit", by.x="row.names")
+
+## head(BM.see[order(BM.see$pop.condsTW),c(3,4,5,6,9,10)], n=50)
+@
+
+<<BM.heat.plot, echo=FALSE, results=hide>>=
+
+png("../figures/BM.heat_rep.png", width=720, height=720)
+heatmap (BM.idists , symm=TRUE, margins = c (7,7))
+dev.off()
+
+@ 
+
+
+<<BM.sum, echo=FALSE, cach=TRUE, results=hide>>=
+
+CE <- merge(contig.df[,c("contig", "Ce.hit")],
+            counts.frame, by.x = "contig", by.y = "row.names")
+
+CE <- CE[!is.na(CE$Ce.hit),]
+CE <- do.call("rbind", by(CE, CE$Ce.hit, function (x) colSums(x[,3:length(CE)])))
+CE <- subset(CE, rowSums(CE)>48)
+
+CE.mf <- newCountDataSet(CE, sex.conds)
+CE.mf <- estimateSizeFactors(CE.mf)
+CE.mf <- estimateVarianceFunctions(CE.mf)
+
+CE.vsd <- getVarianceStabilizedData( CE.mf )
+CE.dists <- dist( t( CE.vsd ) )
+CE.idists <- as.matrix(CE.dists)
+
+CE.ed <- DGEList(CE, lib.size=colSums(CE))
+CE.ed <- calcNormFactors(CE.ed)
+CE.ed <- estimateGLMCommonDisp(CE.ed, design=design)
+CE.ed <- estimateGLMTrendedDisp(CE.ed, design=design)
+CE.ed <- estimateGLMTagwiseDisp(CE.ed, design=design)
+
+## glmfit for DGEList uding tagwise dispersion
+CE.glmfit <- glmFit(CE.ed, design, dispersion=CE.ed$tagwise.dispersion)
+
+CE.glm.l <- glm.wrapper(CE.ed, CE.glmfit, combi.conds)
+
+CE.topTags.l <- lapply(CE.glm.l, function (x){
+  tt <- topTags(x, n=40000) ## set as high as the length 
+  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+})
+
+CE.orthologs.l <- lapply(CE.topTags.l, function (x) rownames(x$table))
+
+CE.see <- merge(as.data.frame(CE.topTags.l[[3]]$table),
+                contig.df[!duplicated(contig.df$Ce.hit),c("Ce.hit", "Ce.annot")],
+                by.y="Ce.hit", by.x="row.names")
+
+## head(CE.see[order(CE.see$pop.condsTW),c(3,4,5,6,9,10)], n=50)
+
+qplot(CE.see$adj.P.Val)
+@ 
+
+<<CE.heat.plot, echo=FALSE, results=hide>>=
+
+png("../figures/CE.heat_rep.png", width=720, height=720)
+heatmap (CE.idists , symm=TRUE, margins = c (7,7))
+dev.off()
+
+@ 

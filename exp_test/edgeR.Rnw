@@ -36,29 +36,6 @@ topTags.l <- lapply(glm.l, function (x){
 contigs.l <- lapply(topTags.l, function (x) rownames(x$table))
 contigs.all <- unlist(contigs.l)
 
-## The same for MN-genes only
-ed.MN <- DGEList(co.f.MN, lib.size=colSums(co.f.MN))
-ed.MN <- calcNormFactors(ed.MN)
-ed.MN <- estimateGLMCommonDisp(ed.MN, design=design)
-ed.MN <- estimateGLMTrendedDisp(ed.MN, design=design)
-ed.MN <- estimateGLMTagwiseDisp(ed.MN, design=design)
-
-## glmfit for DGEList uding tagwise dispersion
-glmfit.MN <- glmFit(ed.MN, design, dispersion=ed.MN$tagwise.dispersion)
-
-## selects all coefficients being contained in each other hierachically
-combi.conds <- gsub(":", ".*", names(as.data.frame(glmfit.MN$design))[2:8])
-glm.MN.l <- glm.wrapper(ed.MN, glmfit.MN, combi.conds)
-
-## topTags works (same as using p.adjust directly)
-topTags.MN.l <- lapply(glm.MN.l, function (x){
-  tt <- topTags(x, n=40000) ## set as high as the length 
-  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
-})
-
-contigs.MN.l <- lapply(topTags.MN.l, function (x) rownames(x$table))
-contigs.MN.all <- unlist(contigs.MN.l)
-
 ## plot fitted vs. observed values for all contigs and libraries 
 cf <- cbind(rownames(co.f), co.f)
 observed <- melt.data.frame(cf, id.vars="rownames(co.f)")
@@ -71,55 +48,9 @@ fit.plot <- ggplot(fit.comb, aes(observed, fitted)) +
   geom_point() +
   facet_wrap(~lib) +
   scale_x_log10() +
-  scale_y_log10()
+  scale_y_log10() +
+  theme_bw()
 
-##################### Male / Female seperately ###########################
-##### Male
-m.c <- co.f[ , sex.conds=="male" ]
-design.sexless <- model.matrix(~eel.conds[sex.conds=="male"]*pop.conds[sex.conds=="male"])
-## Counts frame to full DGEList
-dm <- DGEList(m.c,
-              lib.size=colSums(m.c))
-dm <- calcNormFactors(dm)
-dm <- estimateGLMCommonDisp(dm, design=design.sexless)
-dm <- estimateGLMTrendedDisp(dm, design=design.sexless)
-dm <- estimateGLMTagwiseDisp(dm, design=design.sexless)
-
-## glmfit for DGEList uding tagwise dispersion
-glmfit.male <- glmFit(dm, design.sexless, dispersion=dm$tagwise.dispersion)
-
-## selects all coefficients being contained in each other hierachically
-glm.male <- glmLRT(dm, glmfit.male, coef=grep("pop", colnames(glmfit.male$design)))
-
-## topTags works (same as using p.adjust directly)
-tt.male <- topTags(glm.male, n=40000)
-topTags.male <- tt.male[tt.male$table$adj.P.Val<0.05]
-
-#### Female
-f.c <- co.f[ , sex.conds=="female" ]
-## Counts frame to full DGEList
-df <- DGEList(f.c,
-              lib.size=colSums(f.c))
-df <- calcNormFactors(df)
-df <- estimateGLMCommonDisp(df, design=design.sexless)
-df <- estimateGLMTrendedDisp(df, design=design.sexless)
-df <- estimateGLMTagwiseDisp(df, design=design.sexless)
-
-## glmfit for DGEList uding tagwise dispersion
-glmfit.female <- glmFit(df, design.sexless, dispersion=df$tagwise.dispersion)
-
-## selects all coefficients being contained in each other hierachically
-glm.female <- glmLRT(df, glmfit.female, coef=grep("pop", colnames(glmfit.female$design)))
-
-## topTags works (same as using p.adjust directly)
-tt.female <- topTags(glm.female, n=40000)
-topTags.female <- tt.female[tt.female$table$adj.P.Val<0.05]
-
-all.methods.pop.contigs <- intersect(intersect(rownames(topTags.female$table),
-                                               rownames(topTags.male$table)),
-                                     contigs.l[[3]])
-
-@ 
 
 <<edgeR.venns, echo=FALSE, results=hide>>=
 
@@ -156,6 +87,9 @@ venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
                   sex_all     = match(contigs.l[[1]], contigs.all)),
              filename = "/home/ele/thesis/experimental_infection/figures/combi_venn.tiff")
 
+
+
+
 ## par(mfrow = c(1, 2))
 ## maPlot(ed$counts[, 1], ed$counts[, 2], normalize = TRUE, pch = 19,
 ##            cex = 0.4, ylim = c(-8, 8))
@@ -168,19 +102,6 @@ venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
 ## maPlot(ed$counts[, 1]/eff.libsize[1], ed$counts[, 2]/eff.libsize[2],
 ##     normalize = FALSE, pch = 19, cex = 0.4, ylim = c(-8, 8))
 ## grid(col = "blue")
-
-
-@ 
-
-<<edgeR.mds, echo=FALSE>>=
-
-png("/home/ele/thesis/experimental_infection/figures/mds_male.png")
-plotMDS(dm)
-dev.off()
-
-png("/home/ele/thesis/experimental_infection/figures/mds.png")
-plotMDS(ed)
-dev.off()
 
 @ 
   
@@ -195,42 +116,77 @@ cox2.contigs <- contig.df[grepl("Cytochrome C oxidase subunit 2", contig.df$Bm.a
                          grepl("Cytochrome C oxidase subunit 2", contig.df$nr.uniprot.annot, ignore.case=TRUE),
                          "contig"]
 
-colors <- colorRampPalette(c("white", "darkblue"))(100)
+sperm.contigs <- contig.df[grepl("sperm", contig.df$Bm.annot, ignore.case=TRUE) |
+                         grepl("sperm", contig.df$Ce.annot, ignore.case=TRUE) |
+                         grepl("sperm", contig.df$nr.uniprot.annot, ignore.case=TRUE),
+                         "contig"]
 
-gpd <- contigs.l[[3]]
-gpd <- gpd[!gpd%in%contigs.l[[1]] & !gpd%in%contigs.l[[2]]]
-## gpd <- gpd[gpd%in%MN.contigs]
-pop.to.plot <- vsd[gpd, ]
-pop.to.plot <- pop.to.plot[, c(grep("EU", pop.conds), grep("TW", pop.conds))]
+P450.contigs <- contig.df[grepl("P450", contig.df$Bm.annot, ignore.case=TRUE) |
+                          grepl("P450", contig.df$Ce.annot, ignore.case=TRUE) |
+                          grepl("P450", contig.df$nr.uniprot.annot, ignore.case=TRUE),
+                          "contig"]
 
+## Heatmaps for clear categories
+cmcol <- colorRampPalette(brewer.pal(8, "RdYlBu"))(256)
 
-rsc <- ifelse(rownames(pop.to.plot) %in% cox1.contigs, "red",
-              ifelse(rownames(pop.to.plot) %in% cox2.contigs, "red4", "yellow"))
+sex.only <- contigs.l[[1]][!contigs.l[[1]]%in%contigs.l[[2]] & !contigs.l[[1]]%in%contigs.l[[3]]]
+eel.only <- contigs.l[[2]][!contigs.l[[2]]%in%contigs.l[[1]] & !contigs.l[[2]]%in%contigs.l[[3]]]
+pop.only <- contigs.l[[3]][!contigs.l[[3]]%in%contigs.l[[1]] & !contigs.l[[3]]%in%contigs.l[[2]]]
 
-csc <- ifelse(grepl("A\\w_R", colnames(pop.to.plot)), "green", "blue")
+heatmap.contig <- function (contigs, csc.regex, rsc.contigs, path, varSd=vsd) {
+  contigs.plot <- varSd[contigs, ]
+  contigs.plot <- contigs.plot[, c(grep("EU", pop.conds), grep("TW", pop.conds))]
 
-png("/home/ele/thesis/experimental_infection/figures/pop_only_contigs_heat.png", res=100)
-heatmap(pop.to.plot, col = colors, scale = "none",
-        ColSideColors=csc, RowSideColors=rsc)
+  rsc <- ifelse(rownames(contigs.plot) %in% rsc.contigs, "red", "yellow")
+  csc <- ifelse(grepl(csc.regex, colnames(contigs.plot)), "green", "blue")
+
+  png(path, res=100)
+  heatmap.2(contigs.plot, col = cmcol, labRow="", 
+            ColSideColors=csc, RowSideColors=rsc, trace="none",
+            dendrogram="column", density.info="density")
+  dev.off()
+}
+
+## Sex ##
+heatmap.contig(sex.only, "M$", sperm.contigs,
+               "/home/ele/thesis/experimental_infection/figures/sex_only_heat.png")
+
+heatmap.contig(contigs.l[[1]][contigs.l[[2]]%in%sig.sex], "M$", sperm.contigs,
+               "/home/ele/thesis/experimental_infection/figures/sex_onlyDE_heat.png")
+
+heatmap.contig(contigs.l[[1]], "M$", sperm.contigs,
+               "/home/ele/thesis/experimental_infection/figures/sex_all_heat.png")
+
+## eel host ##
+heatmap.contig(eel.only, "AJ", P450.contigs, 
+               "/home/ele/thesis/experimental_infection/figures/eel_only_heat.png")
+
+heatmap.contig(contigs.l[[2]][contigs.l[[2]]%in%sig.eel], "AJ", P450.contigs, 
+               "/home/ele/thesis/experimental_infection/figures/eel_onlyDE_heat.png")
+
+heatmap.contig(contigs.l[[2]], "AJ", P450.contigs, 
+               "/home/ele/thesis/experimental_infection/figures/eel_all_heat.png")
+
+## population ###
+heatmap.contig(pop.only, "A\\w_R", cox2.contigs,
+               "/home/ele/thesis/experimental_infection/figures/pop_only_heat.png")
+
+heatmap.contig(contigs.l[[3]][contigs.l[[3]]%in%sig.pop], "A\\w_R", cox2.contigs,
+               "/home/ele/thesis/experimental_infection/figures/pop_onlyDE_heat.png")
+
+heatmap.contig(contigs.l[[3]], "A\\w_R", cox2.contigs,
+               "/home/ele/thesis/experimental_infection/figures/pop_all_heat.png")
+
+heatmap.contig(intersect(sig.pop.female, sig.pop.male), "A\\w_R", cox2.contigs,
+               "/home/ele/thesis/experimental_infection/figures/pop_inters_DEseq_heat.png")
+
+heatmap.contig(intersect(sig.pop.female, sig.pop.male), "A\\w_R", cox2.contigs,
+               "/home/ele/thesis/experimental_infection/figures/pop_inters_DEseq_heat.png")
+
+## MDS plots
+png("/home/ele/thesis/experimental_infection/figures/mds.png")
+plotMDS(ed)
 dev.off()
-
-pop.to.plot <- vsd[all.methods.pop.contigs, ]
-pop.to.plot <- pop.to.plot[, c(grep("EU", pop.conds), grep("TW", pop.conds))]
-
-rsc <- ifelse(rownames(pop.to.plot) %in% cox1.contigs, "red",
-              ifelse(rownames(pop.to.plot) %in% cox2.contigs, "red4", "yellow"))
-
-
-csc <- ifelse(grepl("A\\w_R", colnames(pop.to.plot)), "green", "blue")
-
-png("/home/ele/thesis/experimental_infection/figures/all_method_pop_heat.png", res=100)
-heatmap(pop.to.plot, col = colors, scale = "none",
-        ColSideColors=csc, RowSideColors=rsc)
-dev.off()
-
-## png("/home/ele/thesis/experimental_infection/figures/male_pop_contigs_heat.png")
-## heatmap(pop.to.plot.male, col = colors, scale = "none")
-## dev.off()
 
 @ 
 

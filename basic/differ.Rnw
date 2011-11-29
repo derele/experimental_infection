@@ -62,6 +62,9 @@ gbar <- ggplot(AMS, aes(x= stage, y=mean.value,
   scale_y_continuous("Mean recovery (individuals)") +
   geom_text(x=1, y=5)+
   opts(strip.text.x = theme_text(face="italic")) 
+
+ad.lm <- lm(I(adult.m+adult.f)~A.spec*L.population, data=E)
+
 @ 
 
 <<stages.plot, echo=FALSE>>=

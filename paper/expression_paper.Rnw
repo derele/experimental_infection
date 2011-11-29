@@ -231,7 +231,6 @@ library(xtable)
 library(reshape)
 library(ggplot2)
 
-
 library(limma)
 library(DESeq)
 library(edgeR)
@@ -242,6 +241,9 @@ library(Rsamtools)
 library(goseq)
 library(GSEABase)
 library(GO.db)
+
+library(RColorBrewer)
+library(Heatplus)
 
 source("/home/ele/thesis/454/common_R_functions.R")
 
@@ -254,9 +256,22 @@ The populations differ
 
 \SweaveInput{../basic/submit.Rnw}
 
+We sampled worms
+<<echo=FALSE, results=tex>>=
+names(SU.present) <- c("label", "sex", "host", "population", "intensity", "worms in prep", "conc in prep") 
+
+SU.tab <- xtable(SU.present, digits=c(rep(0, ncol(SU.present)), 2))
+print(SU.tab, include.rownames=FALSE)
+
+@ 
+
 The gene expression does too
 
 \SweaveInput{../basic/read-bam.Rnw}
+
+<<echo=FALSE, results=tex>>=
+print(xtable(map.tab, digits=0), include.rownames=FALSE)
+@ 
 
 \SweaveInput{../exp_test/DESeq.Rnw}
 
@@ -264,19 +279,15 @@ The gene expression does too
 
 %% \SweaveInput{../annot_test/annot_over.Rnw}
 
-
-
 <<save, echo=FALSE, results=hide>>=
 save.image("expression.Rdata")
 @ 
 
 \section*{Discussion}
 
-
 %%%%%%%%%%%%%%%%%%%%%%
 \section*{Conclusions}
 
-  
 %%%%%%%%%%%%%%%%%%
 \section*{Methods}
 
