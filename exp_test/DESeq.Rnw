@@ -1,66 +1,42 @@
 <<DESeq, echo=FALSE, cache=TRUE>>=
 
 ## Male/Female
+cds.DE <- newCountDataSet(co.f, design)
+cds.DE <- estimateSizeFactors(cds.DE)
+cds.DE <- estimateDispersions(cds.DE, method="blind")
 
-cds.sex <- newCountDataSet(co.f, sex.conds)
-cds.sex <- estimateSizeFactors(cds.sex)
-cds.sex <- estimateVarianceFunctions(cds.sex)
-res.sex <- nbinomTest(cds.sex, "male", "female")
-
-vsd <- getVarianceStabilizedData( cds.sex )
+## variance stabilized data
+vsd <- getVarianceStabilizedData( cds.DE )
 dists <- dist( t( vsd ) )
 idists <- as.matrix(dists)
 
-sig.sex <- res.sex[res.sex$padj < .01 & !is.na(res.sex$padj),"id"]
+## normalized counts
+ncu <- counts( cds.DE, normalized=TRUE )
 
-## Eel first total, then seperate for male and female
-cds.eel <- newCountDataSet(co.f, eel.conds)
-cds.eel <- estimateSizeFactors(cds.eel)
-cds.eel <- estimateVarianceFunctions(cds.eel)
-res.eel <- nbinomTest(cds.eel, "Aa", "Aj")
-sig.eel <- res.eel[res.eel$padj < .01 & !is.na(res.eel$padj),"id"]
+hmcol <- colorRampPalette(rev(c("#00007F", "blue", "#007FFF", "cyan",
+                                "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")))
 
-cds.eel.male <- newCountDataSet(co.f[,sex.conds%in%"male"], eel.conds[sex.conds%in%"male"])
-cds.eel.male <- estimateSizeFactors(cds.eel.male)
-cds.eel.male <- estimateVarianceFunctions(cds.eel.male)
-res.eel.male <- nbinomTest(cds.eel.male, "Aa", "Aj")
-sig.eel.male <- res.eel.male[res.eel.male$padj < .01 & !is.na(res.eel.male$padj),"id"]
+rep.technical.heat <- regHeatmap(idists.raw,
+                                 col=hmcol, legend=2,
+                                 dendrogram=list(Row=list(status="hide")),
+                                 labels=list(Row=list(nrow=3), Col=list(nrow=6)))
 
-cds.eel.female <- newCountDataSet(co.f[,sex.conds%in%"female"], eel.conds[sex.conds%in%"female"])
-cds.eel.female <- estimateSizeFactors(cds.eel.female)
-cds.eel.female <- estimateVarianceFunctions(cds.eel.female)
-res.eel.female <- nbinomTest(cds.eel.female, "Aa", "Aj")
-sig.eel.female <- res.eel.female[res.eel.female$padj < .01 & !is.na(res.eel.female$padj),"id"]
+rep.sample.heat <- regHeatmap(idists,
+                              col=hmcol, legend=2,
+                              dendrogram=list(Row=list(status="hide")),
+                              labels=list(Row=list(nrow=3), Col=list(nrow=6)))
 
-## Populations first total, then seperate for male and female
-cds.pop <- newCountDataSet(co.f, pop.conds)
-cds.pop <- estimateSizeFactors(cds.pop)
-cds.pop <- estimateVarianceFunctions(cds.pop)
-res.pop <- nbinomTest(cds.pop, "EU", "TW")
-sig.pop <- res.pop[res.pop$padj < .01 & !is.na(res.pop$padj),"id"]
-
-cds.pop.male <- newCountDataSet(co.f[,sex.conds%in%"male"], pop.conds[sex.conds%in%"male"])
-cds.pop.male <- estimateSizeFactors(cds.pop.male)
-cds.pop.male <- estimateVarianceFunctions(cds.pop.male)
-res.pop.male <- nbinomTest(cds.pop.male, "EU", "TW")
-sig.pop.male <- res.pop.male[res.pop.male$padj < .01 & !is.na(res.pop.male$padj),"id"]
-
-cds.pop.female <- newCountDataSet(co.f[,sex.conds%in%"female"], pop.conds[sex.conds%in%"female"])
-cds.pop.female <- estimateSizeFactors(cds.pop.female)
-cds.pop.female <- estimateVarianceFunctions(cds.pop.female)
-res.pop.female <- nbinomTest(cds.pop.female, "EU", "TW")
-sig.pop.female <- res.pop.female[res.pop.female$padj < .01 & !is.na(res.pop.female$padj),"id"]
-
-
-## contig.df[contig.df$contig%in%intersect(sig.pop.female, sig.pop.male),
-##           grepl("annot" , names(contig.df))]
-
-## contig.df[contig.df$contig%in%c(sig.eel.female, sig.eel.male),
-##           grepl("annot" , names(contig.df))]
+## heatmap.2 (idists , symm=TRUE, margins = c (7,7), col=hmcol, trace="none")
+## heatmap.2 (idists.raw , symm=TRUE, margins = c (7,7), col=hmcol, trace="none")
 
 <<DESeq.plots, echo=FALSE, results=hide>>=
 ## check that m/f are clustering, etc...
-png("../figures/heat_rep.png", width=720, height=720)
+pdf("../figures/heat_rep.pdf", width=14, height=14)
+plot(rep.sample.heat)
+dev.off()
+
+pdf("../figures/heat_tech_rep.pdf", width=14, height=14)
+plot(rep.technical.heat)
 dev.off()
 
 ## Worm Sex

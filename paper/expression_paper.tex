@@ -105,7 +105,7 @@
 
 
 % Begin ...
-\usepackage{/usr/share/R/texmf/tex/latex/Sweave}
+\usepackage{/usr/local/lib64/R/share/texmf/tex/latex/Sweave}
 \begin{document}
 \begin{bmcformat}
 
@@ -233,8 +233,8 @@ The populations differ
 
 
 We sampled worms
-% latex table generated in R 2.13.0 by xtable 1.5-6 package
-% Tue Nov 29 19:55:08 2011
+% latex table generated in R 2.14.0 by xtable 1.6-0 package
+% Mon Dec  5 08:41:33 2011
 \begin{table}[ht]
 \begin{center}
 \begin{tabular}{llllrrr}
@@ -272,16 +272,10 @@ AA/T20F & female & AA & T & 1 & 1 & 5.60 \\
 The gene expression does too
 
 
-\begin{Schunk}
-\begin{Soutput}
-null device 
-          1 
-\end{Soutput}
-\end{Schunk}
 
 
-% latex table generated in R 2.13.0 by xtable 1.5-6 package
-% Tue Nov 29 19:55:24 2011
+% latex table generated in R 2.14.0 by xtable 1.6-0 package
+% Mon Dec  5 08:42:11 2011
 \begin{table}[ht]
 \begin{center}
 \begin{tabular}{llrrr}
@@ -318,52 +312,12 @@ AA\_R11M & 11986442 & 8628520 & 7868814 & 6889551 \\
 \end{table}
 
 
-
-
-## Worm Sex
-
-## scvPlot(cds.mf)
-
-## residualsEcdfPlot( cds.mf, "male" )
-## residualsEcdfPlot( cds.mf, "female" )
-
-## plot( 
-##      res.mf$baseMean, 
-##      res.mf$log2FoldChange, 
-##      log="x", pch=20, cex=.4, 
-##      col = ifelse( res.mf$padj < .01, "red", "black" ),
-##      main="My data")
-
-## Eel species
-
-## scvPlot(cds.eel)
-
-## residualsEcdfPlot( cds.eel, "Aa" )
-## residualsEcdfPlot( cds.eel, "Aj" )
-
-## plot( 
-##      res.eel$baseMean, 
-##      res.eel$log2FoldChange, 
-##      log="x", pch=20, cex=.4, 
-##      col = ifelse( res.eel$padj < .01, "red", "black" ),
-##      main="My data")
-
-## Populations
-
-## scvPlot(cds.pop)
-
-## residualsEcdfPlot( cds.pop, "EU" )
-## residualsEcdfPlot( cds.pop, "TW" )
-
-## plot( 
-##      res.pop$baseMean, 
-##      res.pop$log2FoldChange, 
-##      log="x", pch=20, cex=.4, 
-##      col = ifelse( res.pop$padj < .01, "red", "black" ),
-##      main="Differences between populations")
-
-
   
+
+
+
+
+
 \begin{Schunk}
 \begin{Soutput}
 null device 
@@ -414,10 +368,6 @@ null device
           1 
 \end{Soutput}
 \end{Schunk}
-
-
-
-%% \SweaveInput{../annot_test/annot_over.Rnw}
 
 
 \section*{Discussion}

@@ -1,23 +1,28 @@
-<<BM.sum, echo=FALSE, cach=TRUE, results=hide>>=
+<<ORTHO.sum, echo=FALSE, cache=TRUE>>=
 
+## BRUGIA #############################################
+#######################################################
 
 BM <- merge(contig.df[,c("contig", "Bm.hit")],
             counts.frame, by.x = "contig", by.y = "row.names")
 
 BM <- BM[!is.na(BM$Bm.hit),]
 BM <- do.call("rbind", by(BM, BM$Bm.hit, function (x) colSums(x[,3:length(BM)])))
-BM <- subset(BM, rowSums(BM)>48)
+BM <- subset(BM, rowSums(BM)>32)
 
+BM.DE <- newCountDataSet(BM, design)
+BM.DE <- estimateSizeFactors(BM.DE)
+BM.DE <- estimateDispersions(BM.DE, method="blind")
 
-BM.mf <- newCountDataSet(BM, sex.conds)
-BM.mf <- estimateSizeFactors(BM.mf)
-BM.mf <- estimateVarianceFunctions(BM.mf)
-res.mf <- nbinomTest(BM.mf, "male", "female")
-
-BM.vsd <- getVarianceStabilizedData( BM.mf )
+BM.vsd <- getVarianceStabilizedData( BM.DE )
 BM.dists <- dist( t( BM.vsd ) )
 BM.idists <- as.matrix(BM.dists)
+BM.ncu <- counts( BM.DE, normalized=TRUE )
 
+bm.heat <- regHeatmap(BM.idists,
+                      col=hmcol, legend=2,
+                      dendrogram=list(Row=list(status="hide")),
+                      labels=list(Row=list(nrow=3), Col=list(nrow=6)))
 
 BM.ed <- DGEList(BM, lib.size=colSums(BM))
 BM.ed <- calcNormFactors(BM.ed)
@@ -30,47 +35,50 @@ BM.glmfit <- glmFit(BM.ed, design, dispersion=BM.ed$tagwise.dispersion)
 
 BM.glm.l <- glm.wrapper(BM.ed, BM.glmfit, combi.conds)
 
-
+## the full table for the  expression model
 BM.topTags.l <- lapply(BM.glm.l, function (x){
   tt <- topTags(x, n=40000) ## set as high as the length 
-  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+  ## tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+  ## but we do that later
 })
 
-BM.orthologs.l <- lapply(BM.topTags.l, function (x) rownames(x$table))
+## merge to get the contig names
+BM.l <- lapply(BM.topTags.l, function (x) {
+  merge(x$table,
+        contig.df[,c("contig", "Bm.hit", "Bm.annot")],
+        by.y="Bm.hit", by.x="row.names", all.x=TRUE)
+})
+
+## merge with te contig list
+ortho.combi.l <- lapply(1:7, function (i) {
+  merge(topTags.l[[i]]$table, BM.l[[i]],
+        by.x="row.names", by.y="contig",
+        suffixes=c(".Con", ".Bm"))})
 
 
-BM.see <- merge(as.data.frame(BM.topTags.l[[3]]$table),
-                contig.df[!duplicated(contig.df$Bm.hit),c("Bm.hit", "Bm.annot")],
-                by.y="Bm.hit", by.x="row.names")
-
-## head(BM.see[order(BM.see$pop.condsTW),c(3,4,5,6,9,10)], n=50)
-@
-
-<<BM.heat.plot, echo=FALSE, results=hide>>=
-
-png("../figures/BM.heat_rep.png", width=720, height=720)
-heatmap (BM.idists , symm=TRUE, margins = c (7,7))
-dev.off()
-
-@ 
-
-
-<<BM.sum, echo=FALSE, cach=TRUE, results=hide>>=
+## C.elgens ###########################################
+#######################################################
 
 CE <- merge(contig.df[,c("contig", "Ce.hit")],
             counts.frame, by.x = "contig", by.y = "row.names")
 
 CE <- CE[!is.na(CE$Ce.hit),]
 CE <- do.call("rbind", by(CE, CE$Ce.hit, function (x) colSums(x[,3:length(CE)])))
-CE <- subset(CE, rowSums(CE)>48)
+CE <- subset(CE, rowSums(CE)>32)
 
-CE.mf <- newCountDataSet(CE, sex.conds)
-CE.mf <- estimateSizeFactors(CE.mf)
-CE.mf <- estimateVarianceFunctions(CE.mf)
+CE.DE <- newCountDataSet(CE, design)
+CE.DE <- estimateSizeFactors(CE.DE)
+CE.DE <- estimateDispersions(CE.DE, method="blind")
 
-CE.vsd <- getVarianceStabilizedData( CE.mf )
+CE.vsd <- getVarianceStabilizedData( CE.DE )
 CE.dists <- dist( t( CE.vsd ) )
 CE.idists <- as.matrix(CE.dists)
+CE.ncu <- counts( CE.DE, normalized=TRUE )
+
+ce.heat <- regHeatmap(CE.idists,
+                      col=hmcol, legend=2,
+                      dendrogram=list(Row=list(status="hide")),
+                      labels=list(Row=list(nrow=3), Col=list(nrow=6)))
 
 CE.ed <- DGEList(CE, lib.size=colSums(CE))
 CE.ed <- calcNormFactors(CE.ed)
@@ -83,26 +91,52 @@ CE.glmfit <- glmFit(CE.ed, design, dispersion=CE.ed$tagwise.dispersion)
 
 CE.glm.l <- glm.wrapper(CE.ed, CE.glmfit, combi.conds)
 
+## the full table for the  expression model
 CE.topTags.l <- lapply(CE.glm.l, function (x){
   tt <- topTags(x, n=40000) ## set as high as the length 
-  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+  ## tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+  ## but we do that later
 })
 
-CE.orthologs.l <- lapply(CE.topTags.l, function (x) rownames(x$table))
+## merge to get the contig names
+CE.l <- lapply(CE.topTags.l, function (x) {
+  merge(x$table,
+        contig.df[,c("contig", "Ce.hit", "Ce.annot")],
+        by.y="Ce.hit", by.x="row.names", all.x=TRUE)
+})
 
-CE.see <- merge(as.data.frame(CE.topTags.l[[3]]$table),
-                contig.df[!duplicated(contig.df$Ce.hit),c("Ce.hit", "Ce.annot")],
-                by.y="Ce.hit", by.x="row.names")
+## merge with te contig list
+ortho.COMBI.l <- lapply(1:7, function (i) {
+  merge(ortho.combi.l[[i]], CE.l[[i]],
+        by.x="Row.names", by.y="contig",
+        suffixes=c(".Con", ".Ce"))})
 
-## head(CE.see[order(CE.see$pop.condsTW),c(3,4,5,6,9,10)], n=50)
+ortho.SUM.l <- lapply(ortho.COMBI.l, function (x){
+  subset(x, adj.P.Val.Bm<0.1 & adj.P.Val.Con<0.05 & adj.P.Val<0.1)
+})
 
-qplot(CE.see$adj.P.Val)
+ortho.SUM.l <- lapply(ortho.SUM.l, function (x){
+  names(x)[names(x)%in%"Row.names"] <- "contig"
+  names(x)[names(x)%in%"Row.names.Ce"] <- "ortholog.Ce"
+  names(x)[names(x)%in%"Row.names.Con"] <- "ortholog.Bm"
+  names(x)[!grepl("contig|Bm|Ce|Con" ,names(x))] <-
+    paste(names(x)[!grepl("contig|Bm|Ce|Con" ,names(x))], ".Ce", sep="")
+  return(x)
+})
+
+ortho.l <- lapply(ortho.SUM.l, function(x) x[,"contig"])
+GO.over.under.orhto.l <- lapply(ortho.l, GOstats.wrapper, ann)
+
 @ 
 
-<<CE.heat.plot, echo=FALSE, results=hide>>=
+<<ortho.plot, echo=FALSE, results=hide>>=
 
-png("../figures/CE.heat_rep.png", width=720, height=720)
-heatmap (CE.idists , symm=TRUE, margins = c (7,7))
+pdf("../figures/BM.heat_rep.pdf", width=14, height=14)
+plot(bm.heat)
+dev.off()
+
+pdf("../figures/CE.heat_rep.pdf", width=14, height=14)
+plot(ce.heat)
 dev.off()
 
 @ 

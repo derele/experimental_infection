@@ -37,11 +37,13 @@ counts.frame.wide$Var1 <- NULL
 ## Just to see the clustering fo technical replicates!!!
 
 sex.conds.raw <- factor(ifelse(grepl("M_\\d", names(counts.frame.wide)), "male", "female" ))
+eel.conds.raw <- factor(ifelse(grepl("^AA", names(counts.frame.wide)), "Aa", "Aj" ))
+pop.conds.raw <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame.wide)), "EU", "TW" ))
+design.raw <- model.matrix(~sex.conds.raw*eel.conds.raw*pop.conds.raw)
 
-cds.raw <- newCountDataSet(counts.frame.wide, sex.conds.raw)
+cds.raw <- newCountDataSet(counts.frame.wide, design.raw)
 cds.raw <- estimateSizeFactors(cds.raw)
-cds.raw <- estimateVarianceFunctions(cds.raw)
-
+cds.raw <- estimateDispersions(cds.raw)
 vsd.raw <- getVarianceStabilizedData( cds.raw )
 dists.raw <- dist( t( vsd.raw ) )
 idists.raw <- as.matrix(dists.raw)
@@ -54,7 +56,6 @@ counts.frame <- as.data.frame(tapply(counts.frame.long$value,
                                      sum))
 
 mapped.raw <- colSums(counts.frame)
-
 ## use counts frame for all calculations
 ### limit to good quality for the moment:
 Ac.contigs <- contig.df[contig.df$Ac, "contig"]
@@ -81,14 +82,8 @@ sex.conds <- factor(ifelse(grepl("M$", names(counts.frame)), "male", "female" ))
 eel.conds <- factor(ifelse(grepl("^AA", names(counts.frame)), "Aa", "Aj" ))
 pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(counts.frame)), "EU", "TW" ))
 
-hmcol <- colorRampPalette(brewer.pal(8, "PiYG"))(256)
-heat.raw.idist <- heatmap_2(idists.raw ,  col=hmcol, legend=3)
+design <- model.matrix(~sex.conds*eel.conds*pop.conds)
+
 @ 
 
-<<tech.rep.plot, echo=FALSE>>=
-## check that all tech-reps are clustering, m/f are clustering, etc...
-png("../figures/heat_tech_rep.png", width=720, height=720)
-plot(heat_raw_idis)
-dev.off()
-@ 
 

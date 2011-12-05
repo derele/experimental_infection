@@ -237,13 +237,16 @@ library(edgeR)
 library(ShortRead)
 library(Rsamtools)
 
-##library(GOstats)
 library(goseq)
 library(GSEABase)
 library(GO.db)
+library(GOstats)
 
 library(RColorBrewer)
 library(Heatplus)
+library(gplots)
+
+library(convert)
 
 source("/home/ele/thesis/454/common_R_functions.R")
 
@@ -277,7 +280,11 @@ print(xtable(map.tab, digits=0), include.rownames=FALSE)
 
 \SweaveInput{../exp_test/edgeR.Rnw}
 
-%% \SweaveInput{../annot_test/annot_over.Rnw}
+\SweaveInput{../annot_test/annot_over.Rnw}
+
+\SweaveInput{../exp_test/orthologous.Rnw}
+
+\SweaveInput{../annot_test/nice_heat_plot.Rnw}
 
 <<save, echo=FALSE, results=hide>>=
 save.image("expression.Rdata")

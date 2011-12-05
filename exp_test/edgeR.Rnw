@@ -1,9 +1,6 @@
 <<edgeR, echo=FALSE, cache=TRUE, results=hide>>=
 
-design <- model.matrix(~sex.conds*eel.conds*pop.conds)
-
 ## Counts frame to full DGEList
-
 ed <- DGEList(co.f, lib.size=colSums(co.f))
 ed <- calcNormFactors(ed)
 ed <- estimateGLMCommonDisp(ed, design=design)
@@ -29,11 +26,11 @@ glm.l <- glm.wrapper(ed, glmfit, combi.conds)
 
 ## topTags works (same as using p.adjust directly)
 topTags.l <- lapply(glm.l, function (x){
-  tt <- topTags(x, n=40000) ## set as high as the length 
-  tt[tt$table$adj.P.Val<0.05] ## get only below adj.P
+  topTags(x, n=40000) ## set as high as the length 
 })
 
-contigs.l <- lapply(topTags.l, function (x) rownames(x$table))
+### summarize per contig
+contigs.l <- lapply(topTags.l, function (x) rownames(x$table[x$table$adj.P.Val<0.05,]))
 contigs.all <- unlist(contigs.l)
 
 ## plot fitted vs. observed values for all contigs and libraries 
@@ -51,43 +48,49 @@ fit.plot <- ggplot(fit.comb, aes(observed, fitted)) +
   scale_y_log10() +
   theme_bw()
 
+## Venn diagrams
+all.venn <- venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
+                              eel_all     = match(contigs.l[[2]], contigs.all),
+                              sex_all     = match(contigs.l[[1]], contigs.all)),
+                         filename = NULL)
+Not.all <- length(rownames(co.f)[!rownames(co.f)%in%unlist(contigs.l[1:3])])
 
-<<edgeR.venns, echo=FALSE, results=hide>>=
 
-ggsave("/home/ele/thesis/experimental_infection/figures/fit_obs.png",
+sex.venn <- venn.diagram(list(sex_all     = match(contigs.l[[1]], contigs.all),
+                              sex_eel     = match(contigs.l[[4]], contigs.all),
+                              sex_pop     = match(contigs.l[[5]], contigs.all),
+                              sex_eel_pop = match(contigs.l[[7]], contigs.all)),
+                         filename = NULL)
+Not.sex <- length(rownames(co.f)[!rownames(co.f)%in%unlist(contigs.l[c(1, 4, 5, 7)])])
+
+
+eel.venn <- venn.diagram(list(eel_all     = match(contigs.l[[2]], contigs.all),
+                              sex_eel     = match(contigs.l[[4]], contigs.all),
+                              eel_pop     = match(contigs.l[[6]], contigs.all),
+                              sex_eel_pop = match(contigs.l[[7]], contigs.all)),
+                         filename = NULL)
+Not.eel <- length(rownames(co.f)[!rownames(co.f)%in%unlist(contigs.l[c(2, 4, 6, 7)])])
+
+pop.venn <- venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
+                              sex_pop     = match(contigs.l[[5]], contigs.all),
+                              eel_pop     = match(contigs.l[[6]], contigs.all),
+                              sex_eel_pop = match(contigs.l[[7]], contigs.all)),
+                         filename = NULL)
+Not.pop <- length(rownames(co.f)[!rownames(co.f)%in%unlist(contigs.l[c(3, 5, 6, 7)])])
+
+
+@ 
+
+<<plot.edgeR, echo=FALSE, results=hide>>=
+
+## MDS
+pdf("/home/ele/thesis/experimental_infection/figures/mds.pdf")
+plotMDS(ed)
+dev.off()
+
+ggsave("/home/ele/thesis/experimental_infection/figures/fit_obs.pdf",
        fit.plot,
        width=21, height=21)
-  
-venn.diagram(list(sex         = match(contigs.l[[1]], contigs.all),
-                  sex_eel     = match(contigs.l[[4]], contigs.all),
-                  sex_pop     = match(contigs.l[[5]], contigs.all),
-                  sex_eel_pop = match(contigs.l[[7]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/sex_venn.tiff")
-
-venn.diagram(list(eel         = match(contigs.l[[2]], contigs.all),
-                  sex_eel     = match(contigs.l[[4]], contigs.all),
-                  eel_pop     = match(contigs.l[[6]], contigs.all),
-                  sex_eel_pop = match(contigs.l[[7]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/eel_venn.tiff")
-
-venn.diagram(list(pop         = match(contigs.l[[3]], contigs.all),
-                  sex_pop     = match(contigs.l[[5]], contigs.all),
-                  eel_pop     = match(contigs.l[[6]], contigs.all),
-                  sex_eel_pop = match(contigs.l[[7]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/pop_venn.tiff")
-
-venn.diagram(list(pop         = match(contigs.l[[3]], contigs.all),
-                  eel         = match(contigs.l[[2]], contigs.all)),
-                  sex_pop     = match(contigs.l[[5]], contigs.all),
-                  eel_pop     = match(contigs.l[[6]], contigs.all),
-             filename = "/home/ele/thesis/experimental_infection/figures/what_in_pop_venn.tiff")
-
-venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
-                  eel_all     = match(contigs.l[[2]], contigs.all),
-                  sex_all     = match(contigs.l[[1]], contigs.all)),
-             filename = "/home/ele/thesis/experimental_infection/figures/combi_venn.tiff")
-
-
 
 
 ## par(mfrow = c(1, 2))
@@ -103,91 +106,47 @@ venn.diagram(list(pop_all     = match(contigs.l[[3]], contigs.all),
 ##     normalize = FALSE, pch = 19, cex = 0.4, ylim = c(-8, 8))
 ## grid(col = "blue")
 
+
+pdf("/home/ele/thesis/experimental_infection/figures/edgeR_venns.pdf", width=20, height=20)
+
+vp1 <- viewport(x=0.01, y=0.5, w=0.48, h=0.51,
+                just=c("left", "bottom"))
+vp2 <- viewport(x=0.01, y=0, w=0.48, h=0.49,
+                just=c("left", "bottom"))
+vp3 <- viewport(x=0.51, y=0.5, w=0.48, h=0.51,
+                just=c("left", "bottom"))
+vp4 <- viewport(x=0.51, y=0, w=0.48, h=0.49,
+                just=c("left", "bottom"))
+
+pushViewport(vp1)
+grid.roundrect()
+grid.text("a",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+grid.text(Not.all, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+grid.draw(all.venn)
+popViewport()
+
+pushViewport(vp2)
+grid.roundrect()
+grid.text("b",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+grid.text(Not.sex, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+grid.draw(sex.venn)
+popViewport()
+
+pushViewport(vp3)
+grid.roundrect()
+grid.text("c",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+grid.text(Not.eel, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+grid.draw(eel.venn)
+popViewport()
+
+pushViewport(vp4)
+grid.roundrect()
+grid.text("d",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+grid.text(Not.pop, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+grid.draw(pop.venn)
+popViewport()
+
+dev.off()            
+
 @ 
   
-<<edgeR.heat, echo=FALSE>>=
-
-cox1.contigs <- contig.df[grepl("Cytochrome C oxidase subunit 1", contig.df$Bm.annot, ignore.case=TRUE) |
-                         grepl("Cytochrome C oxidase subunit 1", contig.df$Ce.annot, ignore.case=TRUE) |
-                         grepl("Cytochrome C oxidase subunit 1", contig.df$nr.uniprot.annot, ignore.case=TRUE),
-                         "contig"]
-cox2.contigs <- contig.df[grepl("Cytochrome C oxidase subunit 2", contig.df$Bm.annot, ignore.case=TRUE) |
-                         grepl("Cytochrome C oxidase subunit 2", contig.df$Ce.annot, ignore.case=TRUE) |
-                         grepl("Cytochrome C oxidase subunit 2", contig.df$nr.uniprot.annot, ignore.case=TRUE),
-                         "contig"]
-
-sperm.contigs <- contig.df[grepl("sperm", contig.df$Bm.annot, ignore.case=TRUE) |
-                         grepl("sperm", contig.df$Ce.annot, ignore.case=TRUE) |
-                         grepl("sperm", contig.df$nr.uniprot.annot, ignore.case=TRUE),
-                         "contig"]
-
-P450.contigs <- contig.df[grepl("P450", contig.df$Bm.annot, ignore.case=TRUE) |
-                          grepl("P450", contig.df$Ce.annot, ignore.case=TRUE) |
-                          grepl("P450", contig.df$nr.uniprot.annot, ignore.case=TRUE),
-                          "contig"]
-
-## Heatmaps for clear categories
-cmcol <- colorRampPalette(brewer.pal(8, "RdYlBu"))(256)
-
-sex.only <- contigs.l[[1]][!contigs.l[[1]]%in%contigs.l[[2]] & !contigs.l[[1]]%in%contigs.l[[3]]]
-eel.only <- contigs.l[[2]][!contigs.l[[2]]%in%contigs.l[[1]] & !contigs.l[[2]]%in%contigs.l[[3]]]
-pop.only <- contigs.l[[3]][!contigs.l[[3]]%in%contigs.l[[1]] & !contigs.l[[3]]%in%contigs.l[[2]]]
-
-heatmap.contig <- function (contigs, csc.regex, rsc.contigs, path, varSd=vsd) {
-  contigs.plot <- varSd[contigs, ]
-  contigs.plot <- contigs.plot[, c(grep("EU", pop.conds), grep("TW", pop.conds))]
-
-  rsc <- ifelse(rownames(contigs.plot) %in% rsc.contigs, "red", "yellow")
-  csc <- ifelse(grepl(csc.regex, colnames(contigs.plot)), "green", "blue")
-
-  png(path, res=100)
-  heatmap.2(contigs.plot, col = cmcol, labRow="", 
-            ColSideColors=csc, RowSideColors=rsc, trace="none",
-            dendrogram="column", density.info="density")
-  dev.off()
-}
-
-## Sex ##
-heatmap.contig(sex.only, "M$", sperm.contigs,
-               "/home/ele/thesis/experimental_infection/figures/sex_only_heat.png")
-
-heatmap.contig(contigs.l[[1]][contigs.l[[2]]%in%sig.sex], "M$", sperm.contigs,
-               "/home/ele/thesis/experimental_infection/figures/sex_onlyDE_heat.png")
-
-heatmap.contig(contigs.l[[1]], "M$", sperm.contigs,
-               "/home/ele/thesis/experimental_infection/figures/sex_all_heat.png")
-
-## eel host ##
-heatmap.contig(eel.only, "AJ", P450.contigs, 
-               "/home/ele/thesis/experimental_infection/figures/eel_only_heat.png")
-
-heatmap.contig(contigs.l[[2]][contigs.l[[2]]%in%sig.eel], "AJ", P450.contigs, 
-               "/home/ele/thesis/experimental_infection/figures/eel_onlyDE_heat.png")
-
-heatmap.contig(contigs.l[[2]], "AJ", P450.contigs, 
-               "/home/ele/thesis/experimental_infection/figures/eel_all_heat.png")
-
-## population ###
-heatmap.contig(pop.only, "A\\w_R", cox2.contigs,
-               "/home/ele/thesis/experimental_infection/figures/pop_only_heat.png")
-
-heatmap.contig(contigs.l[[3]][contigs.l[[3]]%in%sig.pop], "A\\w_R", cox2.contigs,
-               "/home/ele/thesis/experimental_infection/figures/pop_onlyDE_heat.png")
-
-heatmap.contig(contigs.l[[3]], "A\\w_R", cox2.contigs,
-               "/home/ele/thesis/experimental_infection/figures/pop_all_heat.png")
-
-heatmap.contig(intersect(sig.pop.female, sig.pop.male), "A\\w_R", cox2.contigs,
-               "/home/ele/thesis/experimental_infection/figures/pop_inters_DEseq_heat.png")
-
-heatmap.contig(intersect(sig.pop.female, sig.pop.male), "A\\w_R", cox2.contigs,
-               "/home/ele/thesis/experimental_infection/figures/pop_inters_DEseq_heat.png")
-
-## MDS plots
-png("/home/ele/thesis/experimental_infection/figures/mds.png")
-plotMDS(ed)
-dev.off()
-
-@ 
-
-
