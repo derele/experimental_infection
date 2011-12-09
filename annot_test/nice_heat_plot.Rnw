@@ -99,8 +99,8 @@ ann.heat.pop = annHeatmap2(exprs(allSet[contigs.l[[3]]]),
     Row=list(data=fData(allSet[contigs.l[[3]]]), inclRef=FALSE)))
 
 ann.heat.pop.male = annHeatmap2(exprs(allSet[contigs.l[[3]],allSet$sex=="male"]),
-  ann=list(Col=list(data=pData(allSet[,allSet$sex=="male"])[,2:3], inclRef=FALSE),
-    Row=list(data=fData(allSet[,allSet$sex=="male"]), inclRef=FALSE)))
+  ann=list(Col=list(data=pData(allSet[contigs.l[[3]],allSet$sex=="male"])[,2:3], inclRef=FALSE),
+    Row=list(data=fData(allSet[contigs.l[[3]],allSet$sex=="male"]), inclRef=FALSE)))
 
 ann.heat.pop.only = annHeatmap2(exprs(allSet.pasty[pop.only.pasty]),
   ann=list(Col=list(data=pData(allSet.pasty[pop.only.pasty]), inclRef=FALSE)))

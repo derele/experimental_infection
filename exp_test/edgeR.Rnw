@@ -107,46 +107,5 @@ ggsave("/home/ele/thesis/experimental_infection/figures/fit_obs.pdf",
 ## grid(col = "blue")
 
 
-pdf("/home/ele/thesis/experimental_infection/figures/edgeR_venns.pdf", width=20, height=20)
-
-vp1 <- viewport(x=0.01, y=0.5, w=0.48, h=0.51,
-                just=c("left", "bottom"))
-vp2 <- viewport(x=0.01, y=0, w=0.48, h=0.49,
-                just=c("left", "bottom"))
-vp3 <- viewport(x=0.51, y=0.5, w=0.48, h=0.51,
-                just=c("left", "bottom"))
-vp4 <- viewport(x=0.51, y=0, w=0.48, h=0.49,
-                just=c("left", "bottom"))
-
-pushViewport(vp1)
-grid.roundrect()
-grid.text("a",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
-grid.text(Not.all, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
-grid.draw(all.venn)
-popViewport()
-
-pushViewport(vp2)
-grid.roundrect()
-grid.text("b",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
-grid.text(Not.sex, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
-grid.draw(sex.venn)
-popViewport()
-
-pushViewport(vp3)
-grid.roundrect()
-grid.text("c",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
-grid.text(Not.eel, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
-grid.draw(eel.venn)
-popViewport()
-
-pushViewport(vp4)
-grid.roundrect()
-grid.text("d",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
-grid.text(Not.pop, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
-grid.draw(pop.venn)
-popViewport()
-
-dev.off()            
-
 @ 
   

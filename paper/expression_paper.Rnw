@@ -247,6 +247,7 @@ library(Heatplus)
 library(gplots)
 
 library(convert)
+library(vegan)
 
 source("/home/ele/thesis/454/common_R_functions.R")
 
@@ -283,6 +284,8 @@ print(xtable(map.tab, digits=0), include.rownames=FALSE)
 \SweaveInput{../annot_test/annot_over.Rnw}
 
 \SweaveInput{../exp_test/orthologous.Rnw}
+
+\SweaveInput{../exp_test/pca_vegan.Rnw}
 
 \SweaveInput{../annot_test/nice_heat_plot.Rnw}
 

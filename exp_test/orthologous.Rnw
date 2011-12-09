@@ -139,4 +139,55 @@ pdf("../figures/CE.heat_rep.pdf", width=14, height=14)
 plot(ce.heat)
 dev.off()
 
+## the Venn diagram for the orthologous conirmed
+
+ortho.all <- unlist(ortho.l)
+all.ortho.venn <- venn.diagram(list(pop_all     = match(ortho.l[[3]], ortho.all),
+                              eel_all     = match(ortho.l[[2]], ortho.all),
+                              sex_all     = match(ortho.l[[1]], ortho.all)),
+                         filename = NULL)
+Not.all.ortho <- length(rownames(co.f)[!rownames(co.f)%in%unlist(ortho.l[1:3])])
+
+
+pdf("/home/ele/thesis/experimental_infection/figures/edgeR_venns.pdf", width=10, height=20)
+
+vp1 <- viewport(x=0.01, y=0.5, w=0.98, h=0.49,
+                just=c("left", "bottom"))
+vp2 <- viewport(x=0.01, y=0.01, w=0.98, h=0.49,
+                just=c("left", "bottom"))
+## vp3 <- viewport(x=0.51, y=0.5, w=0.48, h=0.51,
+##                 just=c("left", "bottom"))
+## vp4 <- viewport(x=0.51, y=0, w=0.48, h=0.49,
+##                 just=c("left", "bottom"))
+
+pushViewport(vp1)
+grid.roundrect()
+grid.text("a",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+grid.text(Not.all, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+grid.draw(all.venn)
+popViewport()
+
+pushViewport(vp2)
+grid.roundrect()
+grid.text("b",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+grid.text(Not.all.ortho, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+grid.draw(all.ortho.venn)
+popViewport()
+
+## pushViewport(vp3)
+## grid.roundrect()
+## grid.text("c",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+## grid.text(Not.eel, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+## grid.draw(eel.venn)
+## popViewport()
+
+## pushViewport(vp4)
+## grid.roundrect()
+## grid.text("d",x=unit(0,"npc"),y=unit(0.97,"npc"), gp=gpar(fontsize=18))
+## grid.text(Not.pop, x=unit(0.07,"npc"), y=unit(0.1,"npc"), gp=gpar(fontfamily="serif"))
+## grid.draw(pop.venn)
+## popViewport()
+
+dev.off()
+
 @ 

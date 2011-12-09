@@ -140,6 +140,10 @@ get.count.table <- function (contig){
 }
 
 
+## No compelling case for pmk (pep.kinase)
+## pep.kinase <- contig.df[grepl("phosphoenolpyruvate", contig.df$Bm.annot, ignore.case=TRUE) & contig.df$AcMN, "contig"]
+## pep.kinase <- pep.kinase[pep.kinase%in%rownames(vsd)]
+
 
 ## blast.annot.in <- function (annot.regex){
 ##   contig.df[grepl(paste("^", annot.regex, "$", sep=""), contig.df$contig) |
