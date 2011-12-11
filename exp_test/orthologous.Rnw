@@ -125,7 +125,6 @@ ortho.SUM.l <- lapply(ortho.SUM.l, function (x){
 })
 
 ortho.l <- lapply(ortho.SUM.l, function(x) x[,"contig"])
-GO.over.under.orhto.l <- lapply(ortho.l, GOstats.wrapper, ann)
 
 @ 
 
@@ -139,7 +138,7 @@ pdf("../figures/CE.heat_rep.pdf", width=14, height=14)
 plot(ce.heat)
 dev.off()
 
-## the Venn diagram for the orthologous conirmed
+## the Venn diagram for the orthologous confirmed
 
 ortho.all <- unlist(ortho.l)
 all.ortho.venn <- venn.diagram(list(pop_all     = match(ortho.l[[3]], ortho.all),

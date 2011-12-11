@@ -101,19 +101,19 @@ anova.cca.o.l <- lapply(cca.o.l, anova)
 
 ## scatterplot3d(pca$x[,1:3], pch=20 , color=mycolors)
 
-pdf("/home/ele/thesis/experimental_infection/figures/pca_sex.pdf", width=10, height=20)    
+pdf("/home/ele/thesis/experimental_infection/figures/pca_sex.pdf", width=5, height=10)    
 par(mfrow=c(2,1))
 plot(rda.l[[1]])
 plot(rda.o.l[[1]])
 dev.off()
 
-pdf("/home/ele/thesis/experimental_infection/figures/pca_eel.pdf", width=10, height=20)    
+pdf("/home/ele/thesis/experimental_infection/figures/pca_eel.pdf", width=5, height=10)    
 par(mfrow=c(2,1))
 plot(rda.l[[2]])
 plot(rda.o.l[[2]])
 dev.off()
 
-pdf("/home/ele/thesis/experimental_infection/figures/pca_pop.pdf", width=10, height=20)    
+pdf("/home/ele/thesis/experimental_infection/figures/pca_pop.pdf", width=5, height=10)    
 par(mfrow=c(2,1))
 plot(rda.l[[3]])
 plot(rda.o.l[[3]])

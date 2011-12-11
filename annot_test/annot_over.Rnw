@@ -1,18 +1,7 @@
 <<annot.test, echo=FALSE, cache=TRUE>>=
 
-ann <- subset(GO.annot, pept_id%in%rownames(co.f))
-ann.mapping <- ann[,c("pept_id", "go_term")]
 
-## produce a AnnotationDbi object 
-goframeData <- as.data.frame(cbind(frame.go_id=as.character(ann.mapping$go_term),
-                                   frame.Evidence="IEA",
-                                   frame.gene_id=as.character(ann.mapping$pept_id)))
-goFrame <- GOFrame(goframeData, organism="Anguillicola crassus")
-
-## produce an full GO-mapping
-goAllFrame <- GOAllFrame(goFrame)
-all.ann.mapping <- as.data.frame(cbind(pept_id=goAllFrame@data$gene_id,
-                                       go_term=goAllFrame@data$go_id))
+  ### NOT USED ANYMOR in FAVOUR of TOPGO #####
 
 ### Not so convincing with GOseq:
 ## goseq.wrapper <- function(de.contigs, contigs, map, direction){
@@ -122,22 +111,46 @@ GOstats.wrapper <- function (set, annot) {
   do.call(rbind, A)
 }
 
+
 GO.over.under.l <- lapply(contigs.l, GOstats.wrapper, ann)
 
-get.count.table <- function (contig){
-  contig.mean <- tapply(ncu[contig,], eel.conds:pop.conds, mean)
-  Bm.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Bm.hit"])
-  Ce.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Ce.hit"])
-  if (!is.na(Bm.ortho)){
-    bm.ortho.mean <- tapply(BM.ncu[Bm.ortho,], eel.conds:pop.conds, mean)}
-  else {bm.ortho.mean <- c(NA, NA, NA, NA)}
-  if (!is.na(Ce.ortho)){
-    ce.ortho.mean <- tapply(CE.ncu[Ce.ortho,], eel.conds:pop.conds, mean)}
-  else {ce.ortho.mean <- c(NA, NA, NA, NA)}
-  tab <- rbind(contig.mean, bm.ortho.mean, ce.ortho.mean)
-  rownames(tab)[1] <- paste(contig, "mean", sep=".")
-  return(tab)
-}
+
+## We could also do it wit single objects to plot the results
+## I rather try topGO for this...
+## gfd <- as.data.frame(cbind(frame.go_id=
+##                            as.character(gsub(" ", "",
+##                                              ann[ann$pcf%in%"MF",
+##                                                  "go_term"])),
+##                            frame.Evidence="IEA",
+##                            frame.gene_id=as.character(ann[ann$pcf%in%"MF",
+##                              "pept_id"])))
+
+## gf <- GOFrame(gfd, organism="Anguillicola crassus")
+## gfa <- GOAllFrame(gf)
+## GSC <- GeneSetCollection(gfa, setType = GOCollection())
+
+## SET <- contigs.l[[3]][contigs.l[[3]]%in%as.character(gfd$frame.gene_id)]
+## ## now the parameters and the test
+## OVER.PARAMS <- GSEAGOHyperGParams(name = "GSEA based annot arameters
+##                                              for over-representation",
+##                                   geneSetCollection = GSC,
+##                                   geneIds = as.character(SET),
+##                                   universeGeneIds = unique(ann[ann$pcf%in%"MF",
+##                                     "pept_id"]),
+##                                   ontology = "MF",
+##                                   pvalueCutoff = 0.05,
+##                                   conditional = FALSE,
+##                                   testDirection = "over") 
+## OVER <- hyperGTest(OVER.PARAMS)
+## GO.over.mf.pop <- termGraphs(OVER, use.terms = FALSE)
+
+## pdf("/home/ele/thesis/experimental_infection/figures/GO_over_mf_pop.pdf", height=5, width=7)
+
+## plotGOTermGraph(GO.over.mf.pop[[1]], OVER, add.counts = TRUE, 
+##                 max.nchar=40, node.shape="box",
+##                 node.colors=c(sig="lightpink", not="blue"),
+##                 cex=10)
+## dev.off()
 
 
 ## No compelling case for pmk (pep.kinase)

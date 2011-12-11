@@ -27,9 +27,43 @@ isELDevelopment <- unlist(by(all.ann.mapping,
                              all.ann.mapping$pept_id,
                              function (x) any (c ("GO:0002164", "GO:0009791") %in% x$go_term )))
 
+isResponsetoStim <- unlist(by(all.ann.mapping,
+                              all.ann.mapping$pept_id,
+                              function (x) any (c ("GO:0050896") %in% x$go_term )))
+
+isPhosphatase <- unlist(by(all.ann.mapping,
+                           all.ann.mapping$pept_id,
+                           function (x) any (c ("GO:0016791") %in% x$go_term )))
+
+isMembrane <- unlist(by(all.ann.mapping,
+                           all.ann.mapping$pept_id,
+                           function (x) any (c ("GO:0016020") %in% x$go_term )))
+
+
+isAntigenProc <- unlist(by(all.ann.mapping,
+                           all.ann.mapping$pept_id,
+                           function (x) any (c ("GO:0002478") %in% x$go_term )))
+
+isEndosome <- unlist(by(all.ann.mapping,
+                           all.ann.mapping$pept_id,
+                           function (x) any (c ("GO:0005768") %in% x$go_term )))
+
+
+isProtLipComp <- unlist(by(all.ann.mapping,
+                           all.ann.mapping$pept_id,
+                           function (x) any (c ("GO:0032994") %in% x$go_term )))
+
+
 annGO <- cbind(isMitochondrial,
                isOxidoreductase,
-               isELDevelopment)
+               isELDevelopment,
+               isResponsetoStim,
+               isPhosphatase,
+               isMembrane,
+               isAntigenProc,
+               isEndosome,
+               isProtLipComp
+)
 
 annGO <- merge(rownames(vsd), annGO, by.x=1, by.y=0, all.x=TRUE)
 rownames(annGO) <- annGO$x

@@ -1,0 +1,103 @@
+<<topGO, echo=FALSE, cache=TRUE>>=
+
+ann <- subset(GO.annot, pept_id%in%rownames(co.f))
+ann.mapping <- ann[,c("pept_id", "go_term")]
+
+## produce a AnnotationDbi object 
+goframeData <- as.data.frame(cbind(frame.go_id=as.character(ann.mapping$go_term),
+                                   frame.Evidence="IEA",
+                                   frame.gene_id=as.character(ann.mapping$pept_id)))
+goFrame <- GOFrame(goframeData, organism="Anguillicola crassus")
+
+## produce an full GO-mapping
+goAllFrame <- GOAllFrame(goFrame)
+all.ann.mapping <- as.data.frame(cbind(pept_id=goAllFrame@data$gene_id,
+                                       go_term=goAllFrame@data$go_id))
+
+GO2contig <- by(all.ann.mapping, all.ann.mapping$pept_id,
+                function (x) c(as.character(x$go_term)))
+geneNames <- names(GO2contig)
+
+TOGO.all.onto <- function (o, gl) {
+  g <- factor(as.integer(geneNames %in% gl))
+  names(g) <- geneNames
+  toGO <-  new("topGOdata", ontology = o, allGenes = g, annot = annFUN.gene2GO,
+               gene2GO = GO2contig)
+  resultFis <- runTest(toGO, algorithm = "classic", statistic = "fisher")
+  list(toGO, resultFis) ## returns a list first data then result
+}
+
+ont <- c("MF", "BP", "CC")
+na <- c("sex", "eel", "pop", "sex_eel", "sex_pop", "eel_pop", "sex_eel_pop")
+
+## For Contigs ##
+## the objects 
+cover <- lapply(c(1:3), function(i){
+  lapply(ont, function (on) TOGO.all.onto (on, contigs.l[[i]]))
+})
+
+## the results tables
+GO.over.l <- lapply(1:3, function(x){
+  do.call("rbind", lapply(1:3, function (i) {
+    GenTable(cover[[x]][[i]][[1]], classic = cover[[x]][[i]][[2]], 
+             orderBy = "classic", topNodes = 10)
+  }))})
+
+
+## For Ortholog confirmed ###
+## the objects
+oover <- lapply(c(1:3), function(i){
+  lapply(ont, function (on) TOGO.all.onto (on, ortho.l[[i]]))
+})
+
+## the results tables
+GO.over.o.l <- lapply(1:3, function(x){
+  do.call("rbind", lapply(1:3, function (i) {
+    GenTable(oover[[x]][[i]][[1]], classic = oover[[x]][[i]][[2]], 
+             orderBy = "classic", topNodes = 10)
+  }))})
+
+
+get.count.table <- function (contig){
+  contig.mean <- tapply(ncu[contig,], eel.conds:pop.conds, mean)
+  Bm.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Bm.hit"])
+  Ce.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Ce.hit"])
+  if (!is.na(Bm.ortho)){
+    bm.ortho.mean <- tapply(BM.ncu[Bm.ortho,], eel.conds:pop.conds, mean)}
+  else {bm.ortho.mean <- c(NA, NA, NA, NA)}
+  if (!is.na(Ce.ortho)){
+    ce.ortho.mean <- tapply(CE.ncu[Ce.ortho,], eel.conds:pop.conds, mean)}
+  else {ce.ortho.mean <- c(NA, NA, NA, NA)}
+  tab <- rbind(contig.mean, bm.ortho.mean, ce.ortho.mean)
+  rownames(tab)[1] <- paste(contig, "mean", sep=".")
+  return(tab)
+}
+
+
+@ 
+
+<<topGO.plot, echo=FALSE>>=
+setwd("/home/ele/thesis/experimental_infection/figures/")
+
+## the plots for contigs
+for(c in 1:3){
+  for(o in 1:3){
+    printGraph(cover[[c]][[o]][[1]],
+               cover[[c]][[o]][[2]], firstSigNodes = 10,
+               fn.prefix = paste("tGO",na[c], ont[o], sep="_"),
+               useInfo = "all", pdfSW = TRUE)
+  }
+}
+
+## the plots for orthologous confirmed
+for(c in 1:3){
+  for(o in 1:3){
+    printGraph(oover[[c]][[o]][[1]],
+               oover[[c]][[o]][[2]], firstSigNodes = 10,
+               fn.prefix = paste("tGO",na[c], "ortho", ont[o], sep="_"),
+               useInfo = "all", pdfSW = TRUE)
+  }
+}
+
+setwd("/home/ele/thesis/experimental_infection/paper/")
+@ 

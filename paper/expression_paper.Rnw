@@ -241,6 +241,7 @@ library(goseq)
 library(GSEABase)
 library(GO.db)
 library(GOstats)
+library(topGO)
 
 library(RColorBrewer)
 library(Heatplus)
@@ -281,9 +282,9 @@ print(xtable(map.tab, digits=0), include.rownames=FALSE)
 
 \SweaveInput{../exp_test/edgeR.Rnw}
 
-\SweaveInput{../annot_test/annot_over.Rnw}
-
 \SweaveInput{../exp_test/orthologous.Rnw}
+
+\SweaveInput{../annot_test/topGO.Rnw}
 
 \SweaveInput{../exp_test/pca_vegan.Rnw}
 
