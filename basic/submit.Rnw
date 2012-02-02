@@ -103,4 +103,10 @@ SU$label <- gsub("-", "",
 
 SU.present <- SU[,c("label", "prepsex", "A.spec", "L.population", "intensity", "prepnum", "prepconc")]
 
+## 12 TW pop infections  
+
+## 5 from Kao Ping (P) AA/T-20 AA/T-12 AA/T-24 AA/T-3  AJ/T-5
+
+## 7 from Yunlin County (Y) =    AA/T-45F     AA/T-42M  AJ/T-8F  AJ/T-26   AJ/T-25    AJ/T-19    AJ/T-20
+
 @ 

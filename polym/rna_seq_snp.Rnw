@@ -1,0 +1,85 @@
+<<echo=FALSE, cache=TRUE>>=
+##  /home/ele/tools/samtools/samtools mpileup -uf db_assembly/fullest_assembly.fasta  *F_1.bam |
+## /home/ele/tools/samtools/bcftools/bcftools view -gcv - > female_1.vca
+
+pol <- read.delim("/home/ele/Data/RNAseq/mapping/female_1_filt.vca",
+                  skip=26, as.is=TRUE)
+
+pol <- pol[nchar(pol$REF)<2 & nchar(pol$ALT)<2, ]
+pol <- pol[grepl("a|c|g|t", pol$REF, ignore.case=TRUE) &
+           grepl("a|c|g|t", pol$ALT, ignore.case=TRUE), ]
+
+pol <- subset(pol, QUAL>20)
+
+EUsamples <- grep("R\\d+F_1.bam", names(pol))
+TWsamples <- grep("T\\d+F_1.bam", names(pol))
+
+allEU.ZERO <- sapply(1:nrow(pol),
+                     function(y) all(sapply(EUsamples, function (x) grepl("0/0", pol[[y,x]]))))
+
+allEU.ZEROorH <- sapply(1:nrow(pol),
+                     function(y) all(sapply(EUsamples, function (x) grepl("0/0|0/1", pol[[y,x]]))))
+
+allEU.ONE <- sapply(1:nrow(pol),
+                    function(y) all(sapply(EUsamples, function (x) grepl("1/1", pol[[y,x]]))))
+
+allEU.ONE <- sapply(1:nrow(pol),
+                    function(y) all(sapply(EUsamples, function (x) grepl("1/1", pol[[y,x]]))))
+
+allEU.ONEorH <- sapply(1:nrow(pol),
+                       function(y) all(sapply(EUsamples, function (x) grepl("1/1|0/1", pol[[y,x]]))))
+
+
+
+allTW.ZERO <- sapply(1:nrow(pol),
+                     function(y) all(sapply(TWsamples, function (x) grepl("0/0", pol[[y,x]]))))
+
+allTW.ZEROorH <- sapply(1:nrow(pol),
+                     function(y) all(sapply(TWsamples, function (x) grepl("0/0|0/1", pol[[y,x]]))))
+
+allTW.ONE <- sapply(1:nrow(pol),
+                    function(y) all(sapply(TWsamples, function (x) grepl("1/1", pol[[y,x]]))))
+
+allTW.ONEorH <- sapply(1:nrow(pol),
+                       function(y) all(sapply(TWsamples, function (x) grepl("1/1|0/1", pol[[y,x]]))))
+
+##########################################################################
+## Lost in Europe, all presnet (het or hom) in Taiwan:
+
+pol[allEU.ONE & allTW.ZEROorH,]
+contig.df[contig.df$contig%in%unique(pol[allEU.ONE & allTW.ZEROorH,"X.CHROM"]),
+          c("contig", "nr.uniprot.annot", "Bm.annot")]
+VARqp[VARqp$contig%in%pol[allEU.ONE & allTW.ZEROorH,"X.CHROM"], 1:6]
+
+pol[allEU.ZERO & allTW.ONEorH,]
+contig.df[contig.df$contig%in%unique(pol[allEU.ZERO & allTW.ONEorH,"X.CHROM"]),
+          c("contig", "nr.uniprot.annot", "Bm.annot")]
+VARqp[VARqp$contig%in%pol[allEU.ZERO & allTW.ONEorH,"X.CHROM"], 1:6]
+
+## In  Contig353 (Deoxyhypusine hydroxylase) at 342, 476, 654 Coding SNPs, at 790
+## Synonymous.
+
+## In Contig1089 (orphan) a SNP in 3' UTR at base 1076.
+
+
+## "Contig13267"
+##########################################################
+## Gained in all European (all het or hom), all absent in Taiwan:
+
+pol[allEU.ONEorH & allTW.ZERO,]
+contig.df[contig.df$contig%in%unique(pol[allEU.ONEorH & allTW.ZERO,"X.CHROM"]),
+          c("contig", "nr.uniprot.annot", "Bm.annot")]
+VARqp[VARqp$contig%in%pol[allEU.ONEorH & allTW.ZERO,"X.CHROM"], 1:5]
+
+## Nothing confirmed with 454 data
+
+pol[allEU.ZEROorH & allTW.ONE,]
+contig.df[contig.df$contig%in%unique(pol[allEU.ZEROorH & allTW.ONE,"X.CHROM"]),
+          c("contig", "nr.uniprot.annot", "Bm.annot")]
+VARqp[VARqp$contig%in%pol[allEU.ZEROorH & allTW.ONE,"X.CHROM"], 1:6]
+
+### 5' UTR of Contig13 (NADH-ubiquinone oxidoreductase chain 1; ND1) at base 265 G to T
+###  completely absent in Taiwan competely present in Europe BUT this is a M_n contig
+### and comes out as a chimera fo two ND1   
+
+@ 

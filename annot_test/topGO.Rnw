@@ -40,7 +40,7 @@ cover <- lapply(c(1:3), function(i){
 GO.over.l <- lapply(1:3, function(x){
   do.call("rbind", lapply(1:3, function (i) {
     GenTable(cover[[x]][[i]][[1]], classic = cover[[x]][[i]][[2]], 
-             orderBy = "classic", topNodes = 10)
+             orderBy = "classic", topNodes = 10, numChar=100)
   }))})
 
 
@@ -61,6 +61,7 @@ GO.over.o.l <- lapply(1:3, function(x){
 get.count.table <- function (contig){
   contig.mean <- tapply(ncu[contig,], eel.conds:pop.conds, mean)
   Bm.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Bm.hit"])
+  Bm.annot <- as.character(contig.df[contig.df$contig%in%contig, "Bm.annot"])
   Ce.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Ce.hit"])
   if (!is.na(Bm.ortho)){
     bm.ortho.mean <- tapply(BM.ncu[Bm.ortho,], eel.conds:pop.conds, mean)}
@@ -70,9 +71,40 @@ get.count.table <- function (contig){
   else {ce.ortho.mean <- c(NA, NA, NA, NA)}
   tab <- rbind(contig.mean, bm.ortho.mean, ce.ortho.mean)
   rownames(tab)[1] <- paste(contig, "mean", sep=".")
+  rownames(tab)[2] <- Bm.annot
+  rownames(tab)[3] <- Ce.ortho
   return(tab)
 }
 
+
+
+## get.count.table <- function (contig){
+##   contig.mean <- tapply(ncu[contig,], sex.conds:eel.conds:pop.conds, mean)
+##   Bm.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Bm.hit"])
+##   Bm.annot <- as.character(contig.df[contig.df$contig%in%contig, "Bm.annot"])
+##   Ce.ortho <- as.character(contig.df[contig.df$contig%in%contig, "Ce.hit"])
+##   if (!is.na(Bm.ortho)){
+##     bm.ortho.mean <- tapply(BM.ncu[Bm.ortho,], sex.conds:eel.conds:pop.conds, mean)}
+##   else {bm.ortho.mean <- c(NA, NA, NA, NA)}
+##   if (!is.na(Ce.ortho)){
+##     ce.ortho.mean <- tapply(CE.ncu[Ce.ortho,], sex.conds:eel.conds:pop.conds, mean)}
+##   else {ce.ortho.mean <- c(NA, NA, NA, NA)}
+##   tab <- rbind(contig.mean, bm.ortho.mean, ce.ortho.mean)
+##   rownames(tab)[1] <- paste(contig, "mean", sep=".")
+##   rownames(tab)[2] <- Bm.annot
+##   rownames(tab)[3] <- Ce.ortho
+##   return(tab)
+## }
+
+eel.detail <- do.call(rbind, lapply(ortho.l[[2]], function (x) {
+  xtable(get.count.table(x))}))
+
+## print(eel.detail, hline.after=1:length(ortho.l[[2]])*3)
+
+pop.detail <- do.call(rbind, lapply(ortho.l[[3]], function (x) {
+  xtable(get.count.table(x))}))
+
+## print(pop.detail, hline.after=1:length(ortho.l[[3]])*3)
 
 @ 
 

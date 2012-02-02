@@ -7,7 +7,7 @@ nReads <- as.data.frame(t(matrix(nReads.raw, nrow=2)))
 names(nReads) <- c("library", "raw.reads")
 
 ## Rsamtools
-what <- c("rname")# , "strand", "pos", "qwidth", "seq")
+what <- c("rname" , "strand", "pos", "qwidth", "seq")
 param <- ScanBamParam(what = what)
 
 files <- list.files("/home/ele/Data/RNAseq/mapping/", "*.bam$")

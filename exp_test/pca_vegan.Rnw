@@ -6,6 +6,7 @@
 ## pca.o.l <- lapply(ortho.l[1:3], function (x) prcomp(t(vsd[x,]), scale = FALSE, center=FALSE))
 
 
+## samples is "sites", genes is "species"
 ## this here from vegan
 rda.l <- lapply(contigs.l[1:6], function (x) rda(t(vsd[x,])))
 rda.o.l <- lapply(ortho.l[1:3], function (x) rda(t(vsd[x,])))

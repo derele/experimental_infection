@@ -5,6 +5,7 @@ cds.DE <- newCountDataSet(co.f, design)
 cds.DE <- estimateSizeFactors(cds.DE)
 cds.DE <- estimateDispersions(cds.DE, method="blind")
 
+## cds.DE <- estimateDispersions(cds.DE)
 ## variance stabilized data
 vsd <- getVarianceStabilizedData( cds.DE )
 dists <- dist( t( vsd ) )

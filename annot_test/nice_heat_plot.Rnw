@@ -86,7 +86,6 @@ featureNames(allSet.pasty) <- Bm.pasty[featureNames(allSet.pasty)]
 contigs.l.pasty <- lapply(contigs.l, function(x) Bm.pasty[x])
 ortho.l.pasty <- lapply(ortho.l, function(x) Bm.pasty[x])
 
-
 sex.only <- contigs.l[[1]][!contigs.l[[1]]%in%contigs.l[[2]] & !contigs.l[[1]]%in%contigs.l[[3]]]
 eel.only <- contigs.l[[2]][!contigs.l[[2]]%in%contigs.l[[1]] & !contigs.l[[2]]%in%contigs.l[[3]]]
 pop.only <- contigs.l[[3]][!contigs.l[[3]]%in%contigs.l[[1]] & !contigs.l[[3]]%in%contigs.l[[2]]]

@@ -296,6 +296,11 @@ save.image("expression.Rdata")
 
 \section*{Discussion}
 
+mitochondrial ATP synthetase subunits 6 and 8 (atp6 and atp8),
+cytochrome c oxidase subunits I–III (cox1–cox3), apocytochrome b
+(cob), and NADH dehydrogenase subunits 1–6 and 4L (nad1–6 and nad4L),
+
+
 %%%%%%%%%%%%%%%%%%%%%%
 \section*{Conclusions}
 
@@ -345,7 +350,7 @@ Volkswagen Foundation, "F\"{o}rderinitiative Evolutionsbiologie".
 
 {\ifthenelse{\boolean{publ}}{\footnotesize}{\small}
   \bibliographystyle{bmc_article} % Style BST file
-  \bibliography{/home/ele/bibtex/master,/home/ele/bibtex/master2}
+  \bibliography{/home/ele/bibtex/master}
 } % Bibliography file (usually '*.bib' )
 
 %%%%%%%%%%%

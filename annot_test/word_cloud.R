@@ -1,4 +1,10 @@
-<<word.cloud, echo=FALSE>>=
+### R code from vignette source '/home/ele/thesis/experimental_infection/annot_test/word_cloud.Rnw'
+
+###################################################
+### code chunk number 1: word.cloud
+###################################################
+
+library(tm)
 
 go.word.cloud <- function (terms1, terms2, lab=c("","", ""), tit=""){
   one.termtable <- terms1[, c("Term", "classic", "Significant")]
@@ -66,4 +72,5 @@ go.eel.vs.pop.mf <- go.word.cloud(GO.over.l[[3]],
 
 ggsave("/home/ele/thesis/experimental_infection/figures/word_cloud_eel_vs_pop_mf.pdf", go.eel.vs.pop.mf, width=22, height=8)
 
-@ 
+
+

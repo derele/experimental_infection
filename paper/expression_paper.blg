@@ -3,10 +3,9 @@ The top-level auxiliary file: expression_paper.aux
 The style file: bmc_article.bst
 Reallocated wiz_functions (elt_size=4) to 6000 items from 240518171576.
 Database file #1: /home/ele/bibtex/master.bib
-Database file #2: /home/ele/bibtex/master2.bib
 You've used 5 entries,
             3603 wiz_defined-function locations,
-            734 strings with 6052 characters,
+            733 strings with 6028 characters,
 and the built_in function-call counts, 7673 in all, are:
 = -- 733
 > -- 26
