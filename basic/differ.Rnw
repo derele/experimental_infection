@@ -69,6 +69,6 @@ ad.lm <- lm(I(adult.m+adult.f)~A.spec*L.population, data=E)
 
 <<stages.plot, echo=FALSE>>=
 
-ggsave("/home/ele/thesis/experimental_infection/figures/stages_plot.pdf", gbar, width=12, height=8)
+ggsave("/home/ele/thesis/experimental_infection/figures/stages_plot.pdf", gbar, width=6, height=4)
 
 @ 

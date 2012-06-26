@@ -76,8 +76,10 @@ allSet <- new("ExpressionSet", exprs=as.matrix(vsd), phenoData = phenoData,
 
 ## ugly hack to get the Bm.annotation pasted to the clustered features (contigs in rows)
 Bm.pasty <- paste(contig.df[contig.df$contig%in%featureNames(allSet), "contig"],
-                  contig.df[contig.df$contig%in%featureNames(allSet), "Bm.annot"],
-                  sep="\n")
+                  gsub("probable|family protein|putative|domain containing protein"
+                       , "", ignore.case=TRUE,
+                       contig.df[contig.df$contig%in%featureNames(allSet), "Bm.annot"]), sep=" = ")
+
 names(Bm.pasty) <- contig.df[contig.df$contig%in%featureNames(allSet), "contig"]
 
 allSet.pasty <- allSet
@@ -101,104 +103,119 @@ pop.only.pasty <- contigs.l.pasty[[3]][!contigs.l.pasty[[3]]%in%contigs.l.pasty[
 ##  Sex
 ann.heat.sex = annHeatmap2(exprs(allSet[contigs.l[[1]]]),
   ann=list(Col=list(data=pData(allSet[contigs.l[[1]]]), inclRef=FALSE),
-    Row=list(data=fData(allSet[contigs.l[[1]]]), inclRef=FALSE)))
+    Row=list(data=fData(allSet[contigs.l[[1]]]), inclRef=FALSE)),
+  labels=list(Row=list(side=3, cex=0.01, nrow=0),
+    Col=list(side=2, cex=0.01, nrow=0)))
 
 ann.heat.sex.only = annHeatmap2(exprs(allSet[sex.only]),
   ann=list(Col=list(data=pData(allSet[sex.only]), inclRef=FALSE),
-    Row=list(data=fData(allSet[sex.only]), inclRef=FALSE)))
+    Row=list(data=fData(allSet[sex.only]), inclRef=FALSE)),
+  labels=list(Row=list(side=3, cex=0.01, nrow=0),
+    Col=list(side=2, cex=0.01, nrow=0)))
 
 ann.heat.sex.ortho = annHeatmap2(exprs(allSet[ortho.l[[1]]]),
   ann=list(Col=list(data=pData(allSet[ortho.l[[1]]]), inclRef=FALSE),
-    Row=list(data=fData(allSet[ortho.l[[1]]]), inclRef=FALSE)))
+    Row=list(data=fData(allSet[ortho.l[[1]]]), inclRef=FALSE)),
+  labels=list(Row=list(side=3, cex=0.01, nrow=0),
+    Col=list(side=2, cex=0.01, nrow=0)))
 
 ## Eel
 ann.heat.eel = annHeatmap2(exprs(allSet[contigs.l[[2]]]),
   ann=list(Col=list(data=pData(allSet[contigs.l[[2]]]), inclRef=FALSE),
-    Row=list(data=fData(allSet[contigs.l[[2]]]), inclRef=FALSE)))
+    Row=list(data=fData(allSet[contigs.l[[2]]]), inclRef=FALSE)),
+  labels=list(Row=list(side=3, cex=0.01, nrow=0),
+    Col=list(side=2, cex=0.01, nrow=0)))
 
 ann.heat.eel.male = annHeatmap2(exprs(allSet[contigs.l[[2]],allSet$sex=="male"]),
   ann=list(Col=list(data=pData(allSet[,allSet$sex=="male"])[,2:3], inclRef=FALSE),
     Row=list(data=fData(allSet[contigs.l[[2]],allSet$sex=="male"]), inclRef=FALSE)))
 
 ann.heat.eel.only = annHeatmap2(exprs(allSet.pasty[eel.only.pasty]),
-  ann=list(Col=list(data=pData(allSet.pasty[eel.only.pasty]), inclRef=FALSE)))
+  ann=list(Col=list(data=pData(allSet.pasty[eel.only.pasty]), inclRef=FALSE)),
+  labels=list(Row=list(cex=2)))
 
 ann.heat.eel.ortho = annHeatmap2(exprs(allSet.pasty[ortho.l.pasty[[2]]]),
-  ann=list(Col=list(data=pData(allSet.pasty[ortho.l.pasty[[2]]]), inclRef=FALSE)))
+  ann=list(Col=list(data=pData(allSet.pasty[ortho.l.pasty[[2]]]), inclRef=FALSE)),
+  labels=list(Row=list(cex=2)))
 
 ## Pop
 ann.heat.pop = annHeatmap2(exprs(allSet[contigs.l[[3]]]),
   ann=list(Col=list(data=pData(allSet[contigs.l[[3]]]), inclRef=FALSE),
-    Row=list(data=fData(allSet[contigs.l[[3]]]), inclRef=FALSE)))
+    Row=list(data=fData(allSet[contigs.l[[3]]]), inclRef=FALSE)),
+  labels=list(Row=list(side=3, cex=0.01, nrow=0),
+    Col=list(side=2, cex=0.01, nrow=0)))
 
 ann.heat.pop.male = annHeatmap2(exprs(allSet[contigs.l[[3]],allSet$sex=="male"]),
   ann=list(Col=list(data=pData(allSet[contigs.l[[3]],allSet$sex=="male"])[,2:3], inclRef=FALSE),
     Row=list(data=fData(allSet[contigs.l[[3]],allSet$sex=="male"]), inclRef=FALSE)))
 
 ann.heat.pop.only = annHeatmap2(exprs(allSet.pasty[pop.only.pasty]),
-  ann=list(Col=list(data=pData(allSet.pasty[pop.only.pasty]), inclRef=FALSE)))
+  ann=list(Col=list(data=pData(allSet.pasty[pop.only.pasty]), inclRef=FALSE)),
+  labels=list(Row=list(cex=2)))
 
 ann.heat.pop.ortho = annHeatmap2(exprs(allSet.pasty[ortho.l.pasty[[3]]]),
-  ann=list(Col=list(data=pData(allSet.pasty[ortho.l.pasty[[3]]]), inclRef=FALSE)))
+  ann=list(Col=list(data=pData(allSet.pasty[ortho.l.pasty[[3]]]), inclRef=FALSE)),
+  labels=list(Row=list(cex=2)))
 
 ## Pop:Eel
 
 ann.heat.pop.eel = annHeatmap2(exprs(allSet.pasty[contigs.l.pasty[[6]]]),
-  ann=list(Col=list(data=pData(allSet.pasty[contigs.l.pasty[[6]]]), inclRef=FALSE)))
+  ann=list(Col=list(data=pData(allSet.pasty[contigs.l.pasty[[6]]]), inclRef=FALSE)),
+  labels=list(Row=list(cex=2)))
 
 @ 
 
 <<plot.ann.heat, echo=FALSE>>=
 
 ## Sex
-pdf("../figures/sex_only_heat.pdf" , width=14, height=14)
+pdf("../figures/sex_only_heat.pdf" , paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.sex.only)
 dev.off()
 
-pdf("../figures/sex_all_heat.pdf", width=14, height=14)
+pdf("../figures/sex_all_heat.pdf")
 plot(ann.heat.sex)
 dev.off()
 
-pdf("../figures/sex_ortho_heat.pdf", width=14, height=14)
+pdf("../figures/sex_ortho_heat.pdf")
 plot(ann.heat.sex.ortho)
 dev.off()
 
 ## Eel
-pdf("../figures/eel_only_heat.pdf", width=14, height=14)
+pdf("../figures/eel_only_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.eel.only)
 dev.off()
 
-pdf("../figures/eel_all_heat.pdf", width=14, height=14)
+pdf("../figures/eel_all_heat.pdf")
 plot(ann.heat.eel)
 dev.off()
 
-pdf("../figures/eel_ortho_heat.pdf", width=14, height=14)
+pdf("../figures/eel_ortho_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.eel.ortho)
 dev.off()
 
-pdf("../figures/eel_male_heat.pdf", width=14, height=14)
+pdf("../figures/eel_male_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.eel.male)
 dev.off()
 
 ## Pop
-pdf("../figures/pop_only_heat.pdf", width=14, height=14)
+pdf("../figures/pop_only_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.pop.only)
 dev.off()
 
-pdf("../figures/pop_all_heat.pdf", width=14, height=14)
+pdf("../figures/pop_all_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.pop)
 dev.off()
 
-pdf("../figures/pop_ortho_heat.pdf", width=14, height=14)
+pdf("../figures/pop_ortho_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.pop.ortho)
 dev.off()
 
-pdf("../figures/pop_male_heat.pdf", width=14, height=14)
+pdf("../figures/pop_male_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.pop.male)
 dev.off()
 
 ## Pop:Eel
-pdf("../figures/pop_eel_heat.pdf", width=14, height=14)
+pdf("../figures/pop_eel_heat.pdf", paper="a4r",  pagecentre=FALSE)
 plot(ann.heat.pop.eel)
 dev.off()
 
