@@ -4,7 +4,6 @@
 ### code chunk number 1: word.cloud
 ###################################################
 
-library(tm)
 
 go.word.cloud <- function (terms1, terms2, lab=c("","", ""), tit=""){
   one.termtable <- terms1[, c("Term", "classic", "Significant")]
