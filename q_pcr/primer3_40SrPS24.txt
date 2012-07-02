@@ -1,0 +1,80 @@
+
+    Primer3 Output
+
+------------------------------------------------------------------------
+
+
+No mispriming library specified
+Using 1-based sequence positions
+OLIGO            start </primer3/primer3_www_results_help.html#PRIMER_START>  len </primer3/primer3_www_results_help.html#PRIMER_LEN>      tm </primer3/primer3_www_results_help.html#PRIMER_TM>     gc% </primer3/primer3_www_results_help.html#PRIMER_GC>   any </primer3/primer3_www_results_help.html#PRIMER_ANY>  </primer3/primer3_www_results_help.html#PRIMER_THREE>   3' </primer3/primer3_www_results_help.html#PRIMER_REPEAT> seq </primer3/primer3_www_results_help.html#PRIMER_OLIGO_SEQ> 
+LEFT PRIMER        170   20   60.00   55.00  3.00  1.00 CACCCCAACAGGTCTTCAGT
+RIGHT PRIMER       369   20   60.24   50.00  4.00  2.00 CCTTGCCTTTGAAGACGGTA
+SEQUENCE SIZE: 532
+INCLUDED REGION SIZE: 400
+
+PRODUCT SIZE: 200, PAIR ANY COMPL: 7.00, PAIR 3' COMPL: 3.00
+
+    1 TAGTGTGTGTCTTCCGCGTTTATATTACCCAAGTTTGAGGTTATCTGGGTGGACGTTTGA
+      .................................................           
+
+   61 AGTCTAGGAGTATCACATAAACATGGGAGATTCTGTGGTCACAATTAGAACAAGGAAAGT
+                                                                  
+
+  121 AATGACAAATCGCTTATTGGCTCGTCGACAGATGGTGGTTGACATTTTACACCCCAACAG
+                                                       >>>>>>>>>>>
+
+  181 GTCTTCAGTTCCAAAGACAGAAATTCGAGAAAAATTGGCTCATATGTACAAGACGACATC
+      >>>>>>>>>                                                   
+
+  241 TGATCTTGTGTTTGTCTATGGATTTCGATGCCATTTTGGTGGTGGTAGGAGCGATGGATT
+                                                                  
+
+  301 CGCTTTAATTTACGATTCACTAGATTTGGCAAAGAAGTTTGAGCCTAAATACCGTCTTCA
+                                                       <<<<<<<<<<<
+
+  361 AAGGCAAGGATTAATAAAGATTGAGAAATCAGGCCGAAAACAAAGAAAGGAACGCAAAAA
+      <<<<<<<<<                                                   
+
+  421 CCGACAGAAGAAAGTGCGGGGAACGAAAAAAACCAAGGTTTCGGCCGGAAAGAAATAAAA
+                                   ...............................
+
+  481 CATATTGTTATATCGTGTTTACTTGATAAACTTGTTTTGTTTATTNTNAAAA
+      ....................................................
+
+KEYS (in order of precedence):
+...... vector sequence
+>>>>>> left primer
+<<<<<< right primer
+
+ADDITIONAL OLIGOS
+                    start </primer3/primer3_www_results_help.html#PRIMER_START>  len </primer3/primer3_www_results_help.html#PRIMER_LEN>      tm </primer3/primer3_www_results_help.html#PRIMER_TM>     gc% </primer3/primer3_www_results_help.html#PRIMER_GC>   any </primer3/primer3_www_results_help.html#PRIMER_ANY>  </primer3/primer3_www_results_help.html#PRIMER_THREE>   3' </primer3/primer3_www_results_help.html#PRIMER_REPEAT> seq </primer3/primer3_www_results_help.html#PRIMER_OLIGO_SEQ> 
+
+ 1 LEFT PRIMER        172   20   59.55   55.00  3.00  0.00 CCCCAACAGGTCTTCAGTTC
+   RIGHT PRIMER       369   20   60.24   50.00  4.00  2.00 CCTTGCCTTTGAAGACGGTA
+   PRODUCT SIZE: 198, PAIR ANY COMPL: 7.00, PAIR 3' COMPL: 1.00
+
+ 2 LEFT PRIMER        173   20   59.55   55.00  3.00  0.00 CCCAACAGGTCTTCAGTTCC
+   RIGHT PRIMER       369   20   60.24   50.00  4.00  2.00 CCTTGCCTTTGAAGACGGTA
+   PRODUCT SIZE: 197, PAIR ANY COMPL: 7.00, PAIR 3' COMPL: 2.00
+
+ 3 LEFT PRIMER         82   20   59.47   50.00  5.00  2.00 CATGGGAGATTCTGTGGTCA
+   RIGHT PRIMER       280   20   59.77   40.00  5.00  2.00 ACCAAAATGGCATCGAAATC
+   PRODUCT SIZE: 199, PAIR ANY COMPL: 4.00, PAIR 3' COMPL: 3.00
+
+ 4 LEFT PRIMER         82   20   59.47   50.00  5.00  2.00 CATGGGAGATTCTGTGGTCA
+   RIGHT PRIMER       290   20   60.61   50.00  3.00  3.00 TCCTACCACCACCAAAATGG
+   PRODUCT SIZE: 209, PAIR ANY COMPL: 6.00, PAIR 3' COMPL: 2.00
+
+Statistics
+         con   too    in    in          no    tm    tm  high  high        high      
+         sid  many   tar  excl   bad    GC   too   too   any    3'  poly   end      
+        ered    Ns   get   reg   GC% clamp   low  high compl compl     X  stab    ok
+Left    2053     0     0     0     0     0   917   480     0     5     0    24   627
+Right   1957     0     0     0    10     0   731   570     0     1     0    36   609
+Pair Stats:
+considered 633, unacceptable product size 606, high end compl 11, ok 16
+primer3 release 1.1.4
+
+
+(primer3_results.cgi release 0.4.0)
+
