@@ -38,3 +38,37 @@ head(gsub("[\\d+|\\w+|\\|]", "", b_annot$prot_sprot_annot))
 
 b_annot <- b_annot[b_annot$transcript%in%good.Tax.transripts,]
 
+IPR <- read.delim("/data/RNAseq/IPR/best_candidates.eclipsed_orfs_removed.IPR.tsv",
+                  header=FALSE)
+
+IPR$transcript <- gsub(".* (comp\\d+_c\\d+_seq\\d+)\\:.*", "\\1", IPR$V1)
+IPR$gene <- gsub(".* (comp\\d+_c\\d+)_seq\\d+\\:.*", "\\1", IPR$V1)
+IPR$protein <- gsub("(^m\\.\\d+).*", "\\1", IPR$V1)
+
+get.GO.df <- function (ipr, sum.col){
+  GO.list <- by(ipr, sum.col, function (x){
+    unlist(strsplit(unique(as.character(x$V14)), "\\|"))})
+  GO.list <- GO.list[lapply(GO.list, length)>0]
+  rep.go <- lapply(GO.list, length)
+  GO.df <- as.data.frame(unlist(GO.list))
+  GO.df$gene <- rep(names(GO.list), times = rep.go)
+  names(GO.df) <- c("go", "gene")
+  GO.df$go <- as.character(GO.df$go)
+  rownames(GO.df) <- NULL
+  return(GO.df)
+}
+
+GO.df.gene <- get.GO.df(IPR, IPR$gene)
+GO.df.transcript <- get.GO.df(IPR, IPR$transcript)
+
+gene.2.GO <- by(GO.df.gene, GO.df.gene$gene,
+                function (x) c(as.character(x$go)))
+
+GO.2.gene <- by(GO.df.gene, GO.df.gene$go,
+                function (x) c(as.character(x$gene)))
+
+transcript.2.GO <- by(GO.df.transcript, GO.df.transcript$gene,
+                      function (x) c(as.character(x$go)))
+
+GO.2.transcript <- by(GO.df.transcript, GO.df.transcript$go,
+                function (x) c(as.character(x$gene)))
