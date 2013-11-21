@@ -8,18 +8,13 @@ use Data::Dumper;  # easy printing, sometimes only used during coding
 use Bio::Perl;
 use Bio::LITE::Taxonomy;
 use Bio::LITE::Taxonomy::NCBI;
-use Bio::LITE::Taxonomy::NCBI::Gi2taxid; # qw/new_dict/;
-
-# new_dict (in => "/db/blastdb/taxonomy/gi_taxid_prot.dmp",
-#            out => "/db/blastdb/taxonomy/gi_taxid_prot.bin");  
 
 my $taxDB = Bio::LITE::Taxonomy::NCBI-> new (
                                              db=>"NCBI",
                                              names=>
-                                             "/db/blastdb/taxonomy/names.dmp",
+                                             "/data/db/taxonomy/names.dmp",
                                              nodes=>
-                                             "/db/blastdb/taxonomy/nodes.dmp",
-                                             dict=>"/db/blastdb/taxonomy/gi_taxid_prot.bin"
+                                             "/data/db/taxonomy/nodes.dmp",
                                             );
 
 while (<>) {

@@ -3,11 +3,11 @@ library(VennDiagram)
 library(pheatmap)
 
 if(!exists ("b_annot")){
-  source("/home/ele/thesis/experimental_infection/basic/trinity_annotation.R")
+    source("basic/trinity_annotation.R")
 }
 
 ## Reading the Rsem expression tables for genes
-G.exp <- read.delim("/data/RNAseq/rsem_trinity/Trinity_genes.counts.matrix.TMM_normalized.FPKM")
+G.exp <- read.delim("/data/A_crassus/RNAseq/rsem_trinity/Trinity_genes.counts.matrix.TMM_normalized.FPKM")
 rownames(G.exp) <- G.exp[,1]
 G.exp$X <- NULL
 names(G.exp) <- gsub("\\.genes\\.results", "", names(G.exp))
@@ -16,8 +16,10 @@ G.e <- G.e[rowSums(G.e)>200, ]
 
 G.e <- G.e[rownames(G.e)%in%good.Tax.genes,]
 
+G.e <- as.matrix(G.e)
+
 ## Reading the Rsem expression tables for transcripts
-T.exp <- read.delim("/data/RNAseq/rsem_trinity/Trinity_trans.counts.matrix.TMM_normalized.FPKM")
+T.exp <- read.delim("/data/A_crassus/RNAseq/rsem_trinity/Trinity_trans.counts.matrix.TMM_normalized.FPKM")
 rownames(T.exp) <- T.exp[,1]
 T.exp$X <- NULL
 names(T.exp) <- gsub("\\.isoforms\\.results", "", names(T.exp))

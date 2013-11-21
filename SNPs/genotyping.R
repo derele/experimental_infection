@@ -1,12 +1,19 @@
+library(ggplot2)
+library(reshape)
+library(adegenet)
+library(RSvgDevice)
+library(phangorn)
+library(ape)
+library(RSvgDevice)
+
 if(!exists("T.e")){
-  source("/home/ele/thesis/experimental_infection/exp_test/edgeR.R")
+    source("exp_test/edgeR.R")
 }
 
-VCF <- read.delim("/data/RNAseq/genotypes_above30.vcf",
+VCF <- read.delim("/data/A_crassus/RNAseq/genotypes_above30.vcf",
                   comment.char="#",
                   header=FALSE,
                   as.is=TRUE)
-
 
 ## get rid of the non-Nematode tanscripts and of the low covered
 ## transcripts from which we do also not use expression evidence
@@ -58,9 +65,6 @@ per.sample.GT.sum <- t(apply(GT, 2, summary.factor))
 
 ## Some HardyWeinberg Stuff???
 ## apply(GT[2:3,], 1, function (x) table(x))
-library(reshape)
-library(adegenet)
-library(RSvgDevice)
 
 ## PCA would be nice
 ## vignette("adegenet-genomics", package='adegenet')
@@ -85,7 +89,6 @@ h <- hclust(d)
 ## plot(h)
 ## dev.off()
 
-library(ape)
 nj.GT <- nj(d)
 
 devSVG("figures/geno_nj_col.svg")
@@ -94,7 +97,6 @@ tiplabels(pch=20, col=myCol, cex=4)
 dev.off()
 
 ## parsimony tree
-library(phangorn)
 OC <- phyDat(as.matrix(t(GT)), type="USER", levels=c(0,1,2))
 ## OC <- acgt2ry(OC)
 ### dm.OC <- dist.logDet(OC)
@@ -105,9 +107,10 @@ plot(tree.OC, type="unrooted")
 tiplabels(pch=20, col=myCol, cex=4)
 dev.off()
 
-### Discriminant Analysis of Principal Components (DAPC)
+## cluster finding 
+clust.ade <- find.clusters(GT.ade, n.clust = 2, n.pca = 5, )
 
-clust.ade <- find.clusters(GT.ade)
+### Discriminant Analysis of Principal Components (DAPC)
 dapc1 <- dapc(GT.ade, n.pca=5, n.da=1)
 
 devSVG("figures/geno_dapc_discr.svg")
@@ -132,21 +135,31 @@ dev.off()
 ## dev.off()
 
 ## seems that templock could be used for this...
-temp <- seploc(GT.ade, block.size=1000, n.cores=6)
-
 
 summary.factor(dapc1$var.contr<1e-15)
 summary.factor(dapc1$pca.loadings[,1]==0)
 ## there are 203 SNPs with a very small variance contribution and a
 ## pca loading of 0 for the first axis. This identifies the most
 ## shared (less discriminating) SNPs across populations
-## This logic somehow does not work!!!
+
+## in the other direction it is possible to find SNPS that discrimitate perfectly
+summary.factor(dapc1$pca.loadings[,1]>0.006)
+summary.factor(dapc1$pca.loadings[,1]>0.01)
 
 pheatmap(GT[dapc1$pca.loadings[,1]>0.006,])
 dev.off()
 
-library(ggplot2)
-GT[rowSums(GT[,pop.conds%in%"EU"])<1 & rowSums(GT[, pop.conds%in%"TW"])>15, ]
-GT[rowSums(GT[,pop.conds%in%"EU"])>15 & rowSums(GT[, pop.conds%in%"TW"])<1, ]
 
-amova(, distances, structures)
+## get per gene genotypes 
+GT.gene <- as.data.frame(GT)
+GT.gene$gene <- gsub("_seq\\d+\\.\\d+$", "", rownames(GT))
+GT.gene.list <- by(GT.gene, GT.gene$gene, function (x) {
+    apply(x[, 1:24], 2, paste, collapse=".")})
+GT.gene <- as.data.frame(do.call(rbind, GT.gene.list))
+
+
+## amova(, distances, structures)
+## HW (Hardy Weinberg)
+
+
+
