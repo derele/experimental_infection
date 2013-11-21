@@ -69,7 +69,8 @@ per.sample.GT.sum <- t(apply(GT, 2, summary.factor))
 ## PCA would be nice
 ## vignette("adegenet-genomics", package='adegenet')
 GT.list <- apply(GT, 1, as.vector)
-GT.ade <- new("genlight", GT.list, ploidy=2)
+GT.ade <- new("genlight", GT.list, ploidy=2,
+              chromosome = gsub("\\.\\d+", "", rownames(GT)))
 GT.ade@pop <- pop.conds
 
 ### PCA
@@ -110,7 +111,12 @@ dev.off()
 ## cluster finding 
 clust.ade <- find.clusters(GT.ade, n.clust = 2, n.pca = 5, )
 
+<<<<<<< HEAD
 ### Discriminant Analysis of Principal Components (DAPC)
+=======
+clust.ade <- find.clusters(GT.ade, n.pca=5, n.clust=2)
+
+>>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
 dapc1 <- dapc(GT.ade, n.pca=5, n.da=1)
 
 devSVG("figures/geno_dapc_discr.svg")
@@ -135,20 +141,31 @@ dev.off()
 ## dev.off()
 
 ## seems that templock could be used for this...
+<<<<<<< HEAD
+=======
+temp <- seploc(GT.ade, block.size=1000, n.cores=6)
+>>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
 
 summary.factor(dapc1$var.contr<1e-15)
 summary.factor(dapc1$pca.loadings[,1]==0)
 ## there are 203 SNPs with a very small variance contribution and a
 ## pca loading of 0 for the first axis. This identifies the most
 ## shared (less discriminating) SNPs across populations
+<<<<<<< HEAD
 
 ## in the other direction it is possible to find SNPS that discrimitate perfectly
 summary.factor(dapc1$pca.loadings[,1]>0.006)
 summary.factor(dapc1$pca.loadings[,1]>0.01)
+=======
+>>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
 
+
+## This logic works!!! We can identify very few markers that seperate
+## the populations well!! 
 pheatmap(GT[dapc1$pca.loadings[,1]>0.006,])
 dev.off()
 
+<<<<<<< HEAD
 
 ## get per gene genotypes 
 GT.gene <- as.data.frame(GT)
@@ -162,4 +179,22 @@ GT.gene <- as.data.frame(do.call(rbind, GT.gene.list))
 ## HW (Hardy Weinberg)
 
 
+=======
+pheatmap(GT[dapc1$pca.loadings[,1]>0.01,])
+dev.off()
+
+library(ggplot2)
+GT[rowSums(GT[,pop.conds%in%"EU"])<1 & rowSums(GT[, pop.conds%in%"TW"])>15, ]
+GT[rowSums(GT[,pop.conds%in%"EU"])>15 & rowSums(GT[, pop.conds%in%"TW"])<1, ]
+
+
+library(topGO)
+MF.seperate <- TOGO.all.onto("MF", names(transcript.2.GO), 
+                             gsub("\\.\\d+", "", rownames(GT[dapc1$pca.loadings[,1]>0.006,])), transcript.2.GO)
+GenTable(MF.seperate[[1]], MF.seperate[[2]])
+
+BP.seperate <- TOGO.all.onto("BP", names(transcript.2.GO), 
+                             gsub("\\.\\d+", "", rownames(GT[dapc1$pca.loadings[,1]>0.006,])), transcript.2.GO)
+GenTable(BP.seperate[[1]], BP.seperate[[2]])
+>>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
 
