@@ -17,17 +17,27 @@ my $taxDB = Bio::LITE::Taxonomy::NCBI-> new (
                                              "/data/db/taxonomy/nodes.dmp",
                                             );
 
-while (<>) {
+my $cmd = "blast_formatter -archive ".$ARGV[0].
+  " -outfmt \'6 qseqid sacc bitscore staxids stitle\'"; 
+
+print STDERR "running $cmd \n";
+
+my @blast = `$cmd`; 
+
+
+print STDERR "obtaining family, phylum, kingdom and superkingdom\n\n";
+
+print  "query,subject,bitscore,taxid,family,phylum,kingdom,superkingdom\n";
+
+foreach (@blast) {
   next if /#/;
   chomp($_);
   my @blt = split (" ", $_);
-  my $contig = $blt[0];
-  my $taxid = $blt[3];
-  my $family = $taxDB->get_term_at_level($taxid,"family");
-  my $phylum = $taxDB->get_term_at_level($taxid,"phylum");
-  my $kingdom = $taxDB->get_term_at_level($taxid,"kingdom");
-  my $superkingdom = $taxDB->get_term_at_level($taxid,"superkingdom");
+  my $family = $taxDB->get_term_at_level($blt[3],"family");
+  my $phylum = $taxDB->get_term_at_level($blt[3],"phylum");
+  my $kingdom = $taxDB->get_term_at_level($blt[3],"kingdom");
+  my $superkingdom = $taxDB->get_term_at_level($blt[3],"superkingdom");
 
-  print "$contig,$taxid,$family,$phylum,$kingdom,$superkingdom\n";
+  print "$blt[0],$blt[1],$blt[2],$blt[3],$family,$phylum,$kingdom,$superkingdom\n";
 }
 

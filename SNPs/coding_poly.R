@@ -1,3 +1,4 @@
+source("functions.R")
 ## ## BASE ONTOLOGY
 ## #
 ## # Code from Mark Blaxter, modified by John Davey,
@@ -201,8 +202,7 @@ base.ontology.decode = list(
 ## read the gff of protein annotation
 library(rtracklayer)
 
-transcripts <- read.ESeq("/data/RNAseq/protein_prediction/Trinity.fasta")
-
+transcripts <- read.ESeq("/data/A_crassus/RNAseq/Trinity/Trinity.fasta")
 names(transcripts) <- gsub("(^comp\\d+_c\\d+_seq\\d+) +.*",
                            "\\1",
                            names(transcripts))
