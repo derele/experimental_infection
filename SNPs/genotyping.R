@@ -22,11 +22,12 @@ VCF <- VCF[VCF$V1%in%rownames(T.e),]
 ## only one transcript per gene
 VCF <- VCF[grepl("_seq1$", VCF$V1), ]
 
-rownames(VCF) <- make.names(make.unique(VCF$V1))
+rownames(VCF) <- paste(VCF$V1, ".", VCF$V2, ":",
+                       VCF$V4, "-", VCF$V5, sep = "" )
 
 rawGT <- VCF[,10:33]
 
-GT.per.gene.table <- table(gsub("\\.\\d+$", "", rownames(rawGT)))
+GT.per.gene.table <- table(gsub("\\.\\d+.*", "", rownames(rawGT)))
 
 names(rawGT) <- c("AA_R11M", "AA_R16M", "AA_R18F", "AA_R28F",
                   "AA_R2M", "AA_R8F", "AA_T12F", "AA_T20F", "AA_T24M", "AA_T3M",
@@ -48,29 +49,40 @@ rownames(GT) <- ifelse(grepl("\\.\\d+", rownames(GT)),
                        rownames(GT),
                        paste(rownames(GT), ".0", sep=""))
 
-## There could be an overabundance of alternative allele homozygotes
-## in Europe
-summary.factor(GT[,pop.conds%in%"TW"])
-summary.factor(GT[,pop.conds%in%"EU"])
+## to avoid restriction of loci to genes later in making the as.loci
+## or standard genind object
+rownames(GT) <- gsub("\\.", "_" , rownames(GT))
+
+
+n.worms.preped <- c(AA_R11M = 14, AA_R16M = 4, AA_R18F = 1, AA_R28F = 1,
+                    AA_R2M = 4, AA_R8F = 1,  AA_T12F = 1, AA_T20F = 1,
+                    AA_T24M = 3, AA_T3M = 4, AA_T42M = 1, AA_T45F = 1, 
+                    AJ_R1F = 1, AJ_R1M = 1, AJ_R3F = 1, AJ_R3M = 2,
+                    AJ_R5F = 1, AJ_R5M = 1, AJ_T19M = 7, AJ_T20M = 8,
+                    AJ_T25M = 5, AJ_T26F = 1, AJ_T5F = 1, AJ_T8F = 1)
 
 ## Testing only for males/females shows that it is not detectable in
 ## the properly genotyped single-individual samples
-summary.factor(GT[,pop.conds%in%"TW"&sex.conds%in%"female"])
-summary.factor(GT[,pop.conds%in%"EU"&sex.conds%in%"female"])
+table(GT[,pop.conds%in%"TW"&n.worms.preped==1])
+table(GT[,pop.conds%in%"EU"&n.worms.preped==1])
 
-summary.factor(GT[,pop.conds%in%"TW"&sex.conds%in%"male"])
-summary.factor(GT[,pop.conds%in%"EU"&sex.conds%in%"male"])
+table(GT[,pop.conds%in%"TW"&n.worms.preped>1])
+table(GT[,pop.conds%in%"EU"&n.worms.preped>1])
 
-per.sample.GT.sum <- t(apply(GT, 2, summary.factor))
+per.sample.GT.sum <- as.data.frame(t(apply(GT, 2, table)))
 
-## Some HardyWeinberg Stuff???
-## apply(GT[2:3,], 1, function (x) table(x))
+per.sample.GT.sum$het.hom <-
+    per.sample.GT.sum[, 2] /
+    (per.sample.GT.sum[, 1] + per.sample.GT.sum[, 3]) 
+
+per.sample.GT.sum <- cbind(per.sample.GT.sum, n.worms.preped)
+
 
 ## PCA would be nice
 ## vignette("adegenet-genomics", package='adegenet')
 GT.list <- apply(GT, 1, as.vector)
 GT.ade <- new("genlight", GT.list, ploidy=2,
-              chromosome = gsub("\\.\\d+", "", rownames(GT)))
+              chromosome = gsub("\\.\\d+.*", "", rownames(GT)))
 GT.ade@pop <- pop.conds
 
 ### PCA
@@ -109,14 +121,12 @@ tiplabels(pch=20, col=myCol, cex=4)
 dev.off()
 
 ## cluster finding 
-clust.ade <- find.clusters(GT.ade, n.clust = 2, n.pca = 5, )
+clust.ade <- find.clusters(GT.ade, n.clust = 2, n.pca = 5)
 
-<<<<<<< HEAD
-### Discriminant Analysis of Principal Components (DAPC)
-=======
-clust.ade <- find.clusters(GT.ade, n.pca=5, n.clust=2)
+clust.4.ade <- find.clusters(GT.ade, n.clust = 4, n.pca = 7)
 
->>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
+clust.opt.ade <- find.clusters(GT.ade, stat = "BIC", n.pca = 7)
+
 dapc1 <- dapc(GT.ade, n.pca=5, n.da=1)
 
 devSVG("figures/geno_dapc_discr.svg")
@@ -128,73 +138,99 @@ scatter(dapc1, scree.da=FALSE,
         col=c("red","blue"))
 dev.off()
 
-## compoplot(dapc1,
-##           col=c("red","blue"),
-##           txt.leg=levels(dapc1$grp),
-##           lab=colnames(GT),
-##           posi="topright",
-##           ncol=2)
-## dev.off()
 
-## loadingplot(dapc1$var.contr,
-##             thres=1e-20)
+## devSVG("figures/geno_dapc_col.svg")
+## myCol <- colorplot(dapc1$scores, dapc1$scores, transp=FALSE, cex=4)
+## abline(h=0,v=0, col="grey")
+## text(pca1$scores[,1], pca1$scores[,2], colnames(GT))
+## add.scatter.eig(pca1$eig, 2, 1, 2, posi="topright", inset=.05, ratio=.3)
 ## dev.off()
-
-## seems that templock could be used for this...
-<<<<<<< HEAD
-=======
-temp <- seploc(GT.ade, block.size=1000, n.cores=6)
->>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
 
 summary.factor(dapc1$var.contr<1e-15)
 summary.factor(dapc1$pca.loadings[,1]==0)
 ## there are 203 SNPs with a very small variance contribution and a
 ## pca loading of 0 for the first axis. This identifies the most
 ## shared (less discriminating) SNPs across populations
-<<<<<<< HEAD
 
 ## in the other direction it is possible to find SNPS that discrimitate perfectly
 summary.factor(dapc1$pca.loadings[,1]>0.006)
 summary.factor(dapc1$pca.loadings[,1]>0.01)
-=======
->>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
-
 
 ## This logic works!!! We can identify very few markers that seperate
 ## the populations well!! 
-pheatmap(GT[dapc1$pca.loadings[,1]>0.006,])
-dev.off()
-
-<<<<<<< HEAD
+## pheatmap(GT[dapc1$pca.loadings[,1]>0.006,])
+## dev.off()
 
 ## get per gene genotypes 
 GT.gene <- as.data.frame(GT)
-GT.gene$gene <- gsub("_seq\\d+\\.\\d+$", "", rownames(GT))
+GT.gene$gene <- gsub("_seq\\d+\\.\\d+.*", "", rownames(GT))
 GT.gene.list <- by(GT.gene, GT.gene$gene, function (x) {
     apply(x[, 1:24], 2, paste, collapse=".")})
 GT.gene <- as.data.frame(do.call(rbind, GT.gene.list))
 
-
-## amova(, distances, structures)
-## HW (Hardy Weinberg)
-
-
-=======
+devSVG("figures/geno_most_224_heat.svg")
 pheatmap(GT[dapc1$pca.loadings[,1]>0.01,])
 dev.off()
 
-library(ggplot2)
-GT[rowSums(GT[,pop.conds%in%"EU"])<1 & rowSums(GT[, pop.conds%in%"TW"])>15, ]
-GT[rowSums(GT[,pop.conds%in%"EU"])>15 & rowSums(GT[, pop.conds%in%"TW"])<1, ]
+GT.haplo <- GT>0
+
+GT.haplo.diff <- sapply(0:11, function (i){ 
+    rownames(GT.haplo[(rowSums(GT.haplo[, pop.conds%in%"EU"]) > i &
+                       rowSums(GT.haplo[, pop.conds%in%"TW"]) == 0) |
+                      (rowSums(GT.haplo[, pop.conds%in%"EU"]) == 0 &
+                       rowSums(GT.haplo[, pop.conds%in%"TW"]) > i)
+                      ,])})
+
+DAPC.frame <- dapc1$pca.loadings
+rownames(DAPC.frame) <- rownames(GT)
+
+## Constructiong the full genind object for fst stats
+
+GT.for.genind <- apply(GT, 2, function (x)
+                       gsub("^2$", "2/2", gsub("^1$", "1/2", gsub("^0$", "1/1", x)))
+                       )
+rownames(GT.for.genind) <- rownames(GT)
 
 
-library(topGO)
-MF.seperate <- TOGO.all.onto("MF", names(transcript.2.GO), 
-                             gsub("\\.\\d+", "", rownames(GT[dapc1$pca.loadings[,1]>0.006,])), transcript.2.GO)
-GenTable(MF.seperate[[1]], MF.seperate[[2]])
+## "expensive" Fst calculations 
+if (!exists ("GT.ade.heavy") ) { 
 
-BP.seperate <- TOGO.all.onto("BP", names(transcript.2.GO), 
-                             gsub("\\.\\d+", "", rownames(GT[dapc1$pca.loadings[,1]>0.006,])), transcript.2.GO)
-GenTable(BP.seperate[[1]], BP.seperate[[2]])
->>>>>>> 70a813d841801dec061d70a3ed879032134fb25c
+    if( file.exists("/data/A_crassus/RNAseq/Fst.Rata")){
+        load("/data/A_crassus/RNAseq/Fst.Rata")
+    }
+
+    else {
+        GT.ade.heavy <- df2genind(t(GT.for.genind), ploidy=2, sep="/",
+                                  pop=GT.ade@pop, ind.names=colnames(GT),
+                                  loc.names=rownames(GT))
+
+        ## Fst, Fis, Fit
+        ## using hierfstat
+        FST <- fstat(GT.ade.heavy[n.worms.preped==1, ])
+
+        pair.matFst <- pairwise.fst(GT.ade.heavy[n.worms.preped==1, ],
+                                    res.type="matrix", truenames=TRUE)
+
+        ## use Fst from pegas
+        GT.loci <- as.loci(GT.ade.heavy[n.worms.preped==1,])
+        fsttab <- Fst(GT.loci)
+
+        apply(fsttab, 2, mean, na.rm=TRUE)
+
+        save(GT.ade.heavy, FST, pair.matFst, fsttab, GT.loci, 
+             file = "/data/A_crassus/RNAseq/Fst.Rata")
+
+        library(Rhh)
+        het.table <- data.frame(ir(GT.ade.heavy@tab[n.worms.preped==1,]))
+        rownames(het.table) <- GT.ade.heavy[n.worms.preped==1,]@ind.names
+
+        het.table$hl <- hl(GT.ade.heavy@tab[n.worms.preped==1,])
+        het.table$sh <- sh(GT.ade.heavy@tab[n.worms.preped==1,])
+
+        ## expected heterozygosity again from adegenet
+        GP.ade.heavy <- genind2genpop(GT.ade.heavy)
+        exp.het <- Hs(GP.ade.heavy, truenames=TRUE)
+    }
+}
+
 

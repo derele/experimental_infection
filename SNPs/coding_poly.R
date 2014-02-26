@@ -1,4 +1,9 @@
 source("functions.R")
+
+if(!exists("VCF")){
+    source("./SNPs/genotyping.R")
+}
+
 ## ## BASE ONTOLOGY
 ## #
 ## # Code from Mark Blaxter, modified by John Davey,
@@ -49,90 +54,86 @@ source("functions.R")
 ## #       tac Y ABI   tgc C ABT   tcc S ABN   ttc F ABP
 ## #       tat Y ABI   tgt C ABT   tct S ABN   ttt F ABP
 
-
-
-
-
-    ## # Set up Base Ontology vector
-base.ontology.encode.string = c(
-  "aaa" = "OBF",
-  "aag" = "OBF",
-  "aac" = "ABP",
-  "aat" = "ABP",
-  "aga" = "QBF",
-  "agg" = "KBF",
-  "agc" = "ABP",
-  "agt" = "ABP",
-  "aca" = "ABN",
-  "acg" = "ABN",
-  "acc" = "ABN",
-  "act" = "ABN",
-  "ata" = "ABJ",
-  "atg" = "ABC",
-  "atc" = "ABJ",
-  "att" = "ABJ",
-  ##
-  "gaa" = "OBF",
-  "gag" = "OBF",
-  "gac" = "ABP",
-  "gat" = "ABP",
-  "gga" = "OBN",
-  "ggg" = "ABN",
-  "ggc" = "ABN",
-  "ggt" = "ABN",
-  "gca" = "ABN",
-  "gcg" = "ABN",
-  "gcc" = "ABN",
-  "gct" = "ABN",
-  "gta" = "ABN",
-  "gtg" = "ABN",
-  "gtc" = "ABN",
-  "gtt" = "ABN",
-  ##
-  "caa" = "OBF",
-  "cag" = "OBF",
-  "cac" = "ABP",
-  "cat" = "ABP",
-  "cga" = "QBN",
-  "cgg" = "KBN",
-  "cgc" = "ABN",
-  "cgt" = "ABN",
-  "cca" = "ABN",
-  "ccg" = "ABN",
-  "ccc" = "ABN",
-  "cct" = "ABN",
-  "cta" = "GBN",
-  "ctg" = "GBN",
-  "ctc" = "ABN",
-  "ctt" = "ABN",
-  ##
-  "taa" = "AEF",
-  "tag" = "ABF",
-  "tac" = "ABI",
-  "tat" = "ABI",
-  "tga" = "AEC",
-  "tgg" = "ALS",
-  "tgc" = "ABT",
-  "tgt" = "ABT",
-  "tca" = "ARN",
-  "tcg" = "ALN",
-  "tcc" = "ABN",
-  "tct" = "ABN",
-  "tta" = "GRF",
-  "ttg" = "GLF",
-  "ttc" = "ABP",
-  "ttt" = "ABP"
-  );
-
 base.ontology.encode <- function(x){  
-  ## # wrap in a control function for iupac and other "bad"
-  ## # bases
-  if (nchar(gsub("[bdefhijklmnopqrsuvwxyz]", "", x, ignore.case=TRUE)) != 3){
-    return (paste(rep("W", times = nchar(x)), collapse=""))
-  }
-  else {
-    return(base.ontology.encode.string[x])
-  }
+    ## Set up Base Ontology vector
+    base.ontology.encode.string = c(
+        "aaa" = "OBF",
+        "aag" = "OBF",
+        "aac" = "ABP",
+        "aat" = "ABP",
+        "aga" = "QBF",
+        "agg" = "KBF",
+        "agc" = "ABP",
+        "agt" = "ABP",
+        "aca" = "ABN",
+        "acg" = "ABN",
+        "acc" = "ABN",
+        "act" = "ABN",
+        "ata" = "ABJ",
+        "atg" = "ABC",
+        "atc" = "ABJ",
+        "att" = "ABJ",
+        ##
+        "gaa" = "OBF",
+        "gag" = "OBF",
+        "gac" = "ABP",
+        "gat" = "ABP",
+        "gga" = "OBN",
+        "ggg" = "ABN",
+        "ggc" = "ABN",
+        "ggt" = "ABN",
+        "gca" = "ABN",
+        "gcg" = "ABN",
+        "gcc" = "ABN",
+        "gct" = "ABN",
+        "gta" = "ABN",
+        "gtg" = "ABN",
+        "gtc" = "ABN",
+        "gtt" = "ABN",
+        ##
+        "caa" = "OBF",
+        "cag" = "OBF",
+        "cac" = "ABP",
+        "cat" = "ABP",
+        "cga" = "QBN",
+        "cgg" = "KBN",
+        "cgc" = "ABN",
+        "cgt" = "ABN",
+        "cca" = "ABN",
+        "ccg" = "ABN",
+        "ccc" = "ABN",
+        "cct" = "ABN",
+        "cta" = "GBN",
+        "ctg" = "GBN",
+        "ctc" = "ABN",
+        "ctt" = "ABN",
+        ##
+        "taa" = "AEF",
+        "tag" = "ABF",
+        "tac" = "ABI",
+        "tat" = "ABI",
+        "tga" = "AEC",
+        "tgg" = "ALS",
+        "tgc" = "ABT",
+        "tgt" = "ABT",
+        "tca" = "ARN",
+        "tcg" = "ALN",
+        "tcc" = "ABN",
+        "tct" = "ABN",
+        "tta" = "GRF",
+        "ttg" = "GLF",
+        "ttc" = "ABP",
+        "ttt" = "ABP"
+        );
+    
+    ## # wrap in a control function for iupac and other "bad"
+    ## # bases
+    if (nchar(gsub("[bdefhijklmnopqrsuvwxyz]", "", x, ignore.case=TRUE)) != 3){
+        return (paste(rep("W", times = nchar(x)), collapse=""))
+    }
+    else {
+        return(base.ontology.encode.string[x])
+    }
 }
   
 base.ontology.decode = list(
@@ -211,68 +212,150 @@ transcripts.1 <- transcripts[gsub(".*_(seq\\d+)", "\\1",
                                   names(transcripts))%in%"seq1"]
 
 
-all.gff <- import.gff("/data/RNAseq/protein_prediction/best_candidates.gff3",
+all.gff <- import.gff("/data/A_crassus/RNAseq/protein_prediction/best_candidates.gff3",
                        asRangedData=FALSE)
 
 cds.gff <- subset(all.gff, all.gff$type=="CDS")
-cds.1.gff <- subset(cds.gff, as.character(cds.gff@seqnames)%in%names(transcripts.1))
+cds.1.gff <- subset(cds.gff, as.character(cds.gff@seqnames)%in%
+                    names(transcripts.1))
 cds.1.gff.df <- as.data.frame(cds.1.gff)
 cds.1.gff.df <- merge(cds.1.gff.df, transcripts.1,
                       by.x="seqnames",
                       by.y=0)
+
 names(cds.1.gff.df)[names(cds.1.gff.df)%in%"y"] <- "transcript"
+cds.1.gff.df$transcript <- as.character(cds.1.gff.df$transcript)
+cds.1.gff.df$start <- as.numeric(cds.1.gff.df$start)
+cds.1.gff.df$end <- as.numeric(cds.1.gff.df$end)
 
-cds <- apply(cds.1.gff.df, 1, function(x) {
-  cds <- substr(x["transcript"],
-                x["start"],
-                x["end"])
-  if(x["strand"]%in%"+"){
-    return(cds)
-  }
-  if(x["strand"]%in%"-"){
-    revcom(cds)
-  }
-})
-
-names(cds) <- cds.1.gff.df$seqnames
-cds.1.gff.df$cds <- cds
-
-
-get.ontology <- function (cds.seq){
-  codons <- substring(cds.seq,
-                      seq(1, nchar(cds.seq), by=3),
-                      seq(3,nchar(cds.seq), by=3))
-  ontology <- lapply(tolower(codons),  base.ontology.encode)
-  return(paste(ontology, collapse=""))
+get.ontology <- function(transcript, start, end, strand) {
+    utr1 <- substr(transcript, 1,
+                    as.numeric(start) - 1)
+    coding <- tolower(substr(transcript, as.numeric(start),
+                             as.numeric(end)))
+    if(nchar(coding)%%3!=0){
+        warning("coding region has not multiple of 3 lenght:\n",
+                transcript, "\tstart:", start,
+                "\tend:", end, "\tstrand:", strand)
+    }
+    utr2 <- substr(transcript,
+                    as.numeric(end)+1,
+                    nchar(transcript))
+    if(strand%in%"-"){
+        coding <- revcom(coding) # revcom thins on the minus strand
+    }
+    ## split the cds by 3 and get the base ontology for each codon
+    codons <- substring(coding,
+                        seq(1, nchar(coding), by=3),
+                        seq(3,nchar(coding), by=3))
+    ont <- lapply(codons, base.ontology.encode)    
+    ontology <- paste(ont, collapse="")
+    utr1 <- gsub("\\w", "Z", utr1)
+    utr2 <- gsub("\\w", "Z", utr2)
+    if(strand%in%"+"){
+        return(paste(utr1, ontology, utr2, sep=""))
+    }
+    ### Need to strReverse the wrong way round cds
+    if(strand%in%"-"){
+        return(paste(utr1, strReverse(ontology), utr2, sep=""))
+    }
 }
 
-base.ontology.cds <- sapply(cds, get.ontology)
-names(base.ontology.cds) <- names(cds)
+cds.1.gff.df$base.ontology <-
+    as.character(apply(cds.1.gff.df, 1, function (x) {
+        get.ontology(x["transcript"], x["start"],
+                     x["end"], x["strand"])}))
 
-cds.1.gff.df$base.ontology.cds <- base.ontology.cds
+## all ontologies have the right length
+summary.factor(nchar(cds.1.gff.df$transcript)==
+               nchar(cds.1.gff.df$base.ontology))
 
+VCF$SNP <- rownames(VCF)
+VAR <- merge(cds.1.gff.df, VCF, by.x = "seqnames", by.y = "V1")
 
-foo <- apply(cds.1.gff.df, 1, function (x) {
-  if(x["strand"]%in%"-"){
-    ont <- strReverse(x["base.ontology.cds"])
-  }
-   if(x["strand"]%in%"+"){
-     ont <- x["base.ontology.cds"]
-  }
-  start <- as.numeric(as.character(x["start"]))
-  end <- as.numeric(as.character(x["end"]))
-  before <- ifelse( start > 1, start-1, 0)
-  after <- nchar(as.character(x["transcript"])) - end + 1
-  paste(paste(rep("Z", times = before ), collapse=""),
-        ont,
-        paste(rep("Z", times = after ), collapse=""),
-        sep = "")
+get.effect <- function (ontology, base, to, strand){
+    if(strand%in%"-"){
+        to <- revcom(to)
+    }
+    code <- unlist(strsplit(ontology, ""))[[base]]
+    base.ontology.decode[[code]][to]
+}
+
+VAR$effect <- apply(VAR, 1, function(x){
+  get.effect(x["base.ontology"], as.numeric(x["V2"]), x["V5"],
+             as.character(x["strand"]))
+})
+
+## somehow the minus strand has much higher N/S
+tapply(VAR$effect, as.character(VAR$strand), table)
+
+## but also SNPs seperating populations have are no more likely to be Nonsyms 
+tapply(VAR$effect, as.character(VAR$SNP)%in%rownames(GT.haplo.diff), table)
+
+get.sites <- function (ontology, transcript){
+  s.sites <- sapply(1:length(ontology), function (i) {
+     split.ont <- unlist(strsplit(ontology[[i]], ""))
+     split.cod <- unlist(strsplit(transcript[[i]], ""))
+     decoded <- lapply(split.ont, function (a){
+       base.ontology.decode[[a]]})
+     reduced.decoded <- lapply(1:length(decoded), function (x) {
+       subset(decoded[[x]], names(decoded[[x]])!=toupper(split.cod[[x]]))})
+     s <- lapply(reduced.decoded, function (w) {
+       length(w[grepl("Syn", w)])/length(w[grepl("Syn|Non", w)])})
+     n <- lapply(reduced.decoded, function (w) {
+       length(w[grepl("Non", w)])/length(w[grepl("Syn|Non", w)])})
+     nsyn.sites <- sum(unlist(n), na.rm=TRUE)
+     syn.sites <- sum(unlist(s), na.rm=TRUE)
+     cbind(nsyn.sites, syn.sites)
+   })
+  data.frame(t(s.sites))
+}
+
+sites <- get.sites(VAR[!duplicated(VAR$seqnames), "base.ontology"],
+                   VAR[!duplicated(VAR$seqnames), "transcript"])
+
+rownames(sites) <-  VAR$seqnames[!duplicated(VAR$seqnames)]
+names(sites) <- c("nsyn.sites", "syn.sites")
+
+VAR <- merge(VAR, sites, by.x = "seqnames", by.y = 0)
+
+get.dn.ds <- function(VARobj){
+    uni <- !duplicated(as.character(VARobj[,"seqnames" ]))
+    (nrow(VARobj[grepl("Non*", VARobj$effect),])/
+     sum(as.numeric(VARobj[uni, "nsyn.sites"]), na.rm=T))/
+     (nrow(VARobj[VARobj$effect=="Synonymous",])/
+      sum(as.numeric(VARobj[uni, "syn.sites"]), na.rm=T))
+}
+
+dn.ds.overall <- get.dn.ds(VAR)
+
+## there is something severely wrong with the minus strand!!!
+by(VAR, as.character(VAR$strand), get.dn.ds)
+
+contig.dn.ds <- by(VAR, as.character(VAR$seqnames), get.dn.ds)
+
+contig.dn.ds[is.infinite(contig.dn.ds)] <- 4
+contig.dn.ds[is.na(contig.dn.ds)] <- 0
+
+pos.selected <- (names(contig.dn.ds[contig.dn.ds>0.5 &
+                                    contig.dn.ds<5]))
+
+## SNPs unique to a population are producing higher dn/ds
+by(VAR, as.factor(as.character(VAR$SNP)%in%rownames(GT.haplo.diff)):
+   as.factor(as.character(VAR$strand)), get.dn.ds)
+
+sapply(1:11, function (i) {
+    get.dn.ds(VAR[VAR$SNP%in%GT.haplo.diff[[i]], ])
+})
+
+sapply(1:11, function (i) {
+    get.dn.ds(VAR[VAR$SNP%in%GT.haplo.diff[[i]], ])
 })
 
 
-bad <- (nchar(as.character(cds.1.gff.df$transcript)) -
-        as.numeric(as.character(cds.1.gff.df$end)) +1)<0
+PCA.loadings <- pca1$loadings
+rownames(PCA.loadings) <- locNames(GT.ade)
 
-num <- nchar(as.character(cds.1.gff.df$transcript)) - as.numeric(as.character(cds.1.gff.df$end))
+VAR$SNP <- gsub("\\.", "_" , VAR$SNP)
 
-summary.factor(bad&bad2)
+VAR <- merge(VAR, PCA.loadings, by.x = "SNP", by.y = 0)

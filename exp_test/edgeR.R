@@ -1,10 +1,8 @@
 library(edgeR)
 library(VennDiagram)
 library(pheatmap)
+library(RSvgDevice)
 
-if(!exists ("b_annot")){
-    source("basic/trinity_annotation.R")
-}
 
 ## Reading the Rsem expression tables for genes
 G.exp <- read.delim("/data/A_crassus/RNAseq/rsem_trinity/Trinity_genes.counts.matrix.TMM_normalized.FPKM")
@@ -13,9 +11,7 @@ G.exp$X <- NULL
 names(G.exp) <- gsub("\\.genes\\.results", "", names(G.exp))
 G.e <- round(G.exp)
 G.e <- G.e[rowSums(G.e)>200, ]
-
 G.e <- G.e[rownames(G.e)%in%good.Tax.genes,]
-
 G.e <- as.matrix(G.e)
 
 ## Reading the Rsem expression tables for transcripts
@@ -33,17 +29,46 @@ eel.conds <- factor(ifelse(grepl("^AA", names(G.exp)), "AA", "AJ" ))
 pop.conds <- factor(ifelse(grepl("\\w\\w_R.*", names(G.exp)), "EU", "TW" ))
 
 design <- model.matrix(~(sex.conds+eel.conds+pop.conds)^2)
-design.wo.pop <- model.matrix(~(sex.conds+eel.conds)^2)
-design.wo.eel <- model.matrix(~(sex.conds+pop.conds)^2)
+rownames(design) <- colnames(T.e)
+
+sample.annot <- as.data.frame(
+    cbind(sex = as.character(sex.conds),
+          host = as.character(eel.conds),
+          worm.pop = as.character(pop.conds)))
+rownames(sample.annot) <- colnames(T.e)
 
 ed <- DGEList(G.e, lib.size=colSums(G.e))
+td <- DGEList(T.e, lib.size=colSums(T.e))
+
+devSVG("figures/mds_genes.svg")
+plotMDS.DGEList(ed, top=500)
+dev.off()
+
+if(!file.exists("figures/heatmap_genes.svg")){
+    devSVG("figures/heatmap_genes.svg")
+    pheatmap(ed$counts, scale="row", show_rownames = FALSE,
+             annotation = sample.annot)
+    dev.off()
+}
+
+if(!file.exists("figures/heatmap_genes.pdf")){
+    pdf("figures/heatmap_genes.pdf")
+    pheatmap(ed$counts, scale="row", show_rownames = FALSE,
+             annotation = sample.annot)
+    dev.off()
+}
+
+## exclude outlier samples
+ed <- ed[, !rownames(ed$samples)%in%c("AJ_T26F", "AA_T42M")]
+td <- td[, !rownames(td$samples)%in%c("AJ_T26F", "AA_T42M")]
+design <- design[!rownames(design)%in%c("AJ_T26F", "AA_T42M"),]
+
 ## Data is normalized
 ## ed <- calcNormFactors(ed)
 ed <- estimateGLMCommonDisp(ed, design=design)
 ed <- estimateGLMTrendedDisp(ed, design=design)
 ed <- estimateGLMTagwiseDisp(ed, design=design)
 
-td <- DGEList(T.e, lib.size=colSums(T.e))
 ## Data is normalized
 ## td <- calcNormFactors(td)
 td <- estimateGLMCommonDisp(td, design=design)
@@ -79,121 +104,32 @@ t.topTags.l <- lapply(t.glm.l, function (x){
 })
 
 ### Transcripts are the real thing; look much nicer!!!
-t.contigs.l <- lapply(t.topTags.l, function (x)
-                      rownames(x$table[x$table$FDR<0.2 &
-                                       abs(x$table[,1]) > 0, ]))
-lapply(t.contigs.l, length)
+t.test.l <- lapply(t.topTags.l, function (x)
+                      rownames(x$table[x$table$FDR<0.05 &
+                                       abs(x$table[,1]) > 1.5, ]))
+lapply(t.test.l, length)
 
-g.contigs.l <- lapply(g.topTags.l, function (x)
-                      rownames(x$table[x$table$FDR<0.2 &
-                                       abs(x$table[,1]) > 0, ]))
-lapply(g.contigs.l, length)
+g.test.l <- lapply(g.topTags.l, function (x)
+                      rownames(x$table[x$table$FDR<0.05 &
+                                       abs(x$table[,1]) > 1.5, ]))
+lapply(g.test.l, length)
 
-pop.straight.t <- t.contigs.l[[3]][!t.contigs.l[[3]]%in%t.contigs.l[[6]]]
+devSVG("/home/ele/thesis/experimental_infection/figures/pop_heat_trans.svg")
+pheatmap(td$counts[t.test.l[[3]], ], scale = "row" ,
+         annotation = sample.annot, show_rownames = FALSE)
+dev.off()
 
-## heatmap.4.contigs <- function (pdata, ...){
-##   ## pdata <- merge(pdata,
-##   ##                b_annot[b_annot$seqnames%in%rownames(pdata),
-##   ##                        c("seqnames", "nuc_nr_annot")],
-##   ##                by.x = 0, by.y = "seqnames",
-##   ##                all.x = TRUE)
-##   ## rownames(pdata) <- make.unique(make.names(pdata$nuc_nr_annot))
-##   ## pdata$Row.names <- NULL
-##   ## pdata$nuc_nr_annot <- NULL
-##   annot <- data.frame(pop.conds,
-##                  sex.conds,
-##                  eel.conds)
-##   rownames(annot) <- colnames(T.e)
-##   rownames(pdata) <- NULL
-##   pheatmap(pdata, annotation = annot, scale="row", ...)
-## }
+pdf("/home/ele/thesis/experimental_infection/figures/pop_heat_trans.pdf")
+pheatmap(td$counts[t.test.l[[3]],], scale = "row" ,
+         annotation = sample.annot, show_rownames = FALSE)
+dev.off()
 
-## pdf("/home/ele/thesis/experimental_infection/figures/pop_straight_heat.pdf")
-## heatmap.4.contigs(T.e[pop.straight.t,] )
-## dev.off()
+devSVG("/home/ele/thesis/experimental_infection/figures/eel_heat_trans.svg")
+pheatmap(td$counts[t.test.l[[2]],], scale = "row" ,
+         annotation = sample.annot, show_rownames = FALSE)
+dev.off()
 
-## pdf("/home/ele/thesis/experimental_infection/figures/pop_heat.pdf")
-## heatmap.4.contigs(T.e[t.contigs.l[[3]],])
-## dev.off()
-
-## ## heatmap.4.contigs(G.e[g.contigs.l[[2]], ])
-
-## ## use Edge DEseq to get variance stabilized data ??
-## ### vsd <- getVarianceStabilizedData( cds.DE )
-
-## ## eel.conds <- eel.conds[sex.conds%in%"male"]
-## ## pop.conds <- pop.conds[sex.conds%in%"male"]
-## PFC.full <- as.data.frame(predFC(T.e, # [,sex.conds%in%"male"],
-##                                  design = design,
-##                                  dispersion=td$tagwise.dispersion))
-## colnames(PFC.full) <- gsub(":", ".", colnames(PFC.full))
-## colnames(PFC.full) <- gsub(":", ".", colnames(PFC.full))
-## colnames(PFC.full) <- gsub("\\(|\\)", "", colnames(PFC.full))
-
-## ## reset gene-expression to normal values in the other eel-species
-## EelVSEelPop <- ggplot(PFC.full, aes(eel.condsAJ + pop.condsTW,
-##                             eel.condsAJ  +  eel.condsAJ.pop.condsTW,
-##                                     color = rownames(PFC.full)%in%t.contigs.l[[6]])) +
-##   geom_point(alpha = 0.1) +
-##   geom_smooth(method = "lm", se=FALSE, color="darkgrey", alpha = 0.5) +
-##   scale_x_continuous("log10 fold change European vs. Taiwanese host") +
-##   scale_y_continuous("log10 fold European vs. Taiwanese host with interaction effect ") + 
-##   scale_color_manual("significance\nof interaction", values = c("black", "red"))+
-##   theme_bw() +
-##   geom_abline(yintercept=0,slope=1)
-
-## ## the differentially expressed genes for the pop*eel interaction
-## ## reset gene-expression to normal values in the other eel-species
-## ## all the population-different genes are in setting back
-## ## eel-differences
-## ## EelVSEelPop <- EelVSEelPop +
-## ##   geom_point(data = PFC.full[t.contigs.l[[3]],],
-## ##              aes(eel.condsAJ  + pop.condsTW ,
-## ##                  eel.condsAJ + pop.condsTW + eel.condsAJ.pop.condsTW),
-## ##              color = "indianred", size = 2) +
-## ##   geom_smooth(data = PFC.full[t.contigs.l[[3]],], method = "lm", se=FALSE, color="indianred")
-
-## ## However, the significant eel-differences are  reverted 
-## library(RSvgDevice)
-## devSVG(file="/home/ele/Dropbox/svg_work/main_vs_inter_working.svg")
-## EelVSEelPop + 
-##   geom_point(data = PFC.full[t.contigs.l[[6]],],
-##              aes(eel.condsAJ + pop.condsTW,
-##                  eel.condsAJ + eel.condsAJ.pop.condsTW), color="red", size = 2) + 
-##   geom_smooth(data = PFC.full[t.contigs.l[[6]],], method = "lm", se=FALSE, color="red")
-## dev.off()
-
-
-## ## pheatmap(G.e[g.contigs.l[[3]], ], scale="row")
-
-## ## contigs.all <- rownames(T.e)
-## ## library(VennDiagram)
-
-## ## foo <- list(sex_all = match(t.contigs.l[[1]], contigs.all),
-## ##             eel_all = match(t.contigs.l[[2]], contigs.all),
-## ##             pop_all = match(t.contigs.l[[3]], contigs.all)
-## ##             )
-
-## contigs.all <- rownames(T.e)
-
-## bar <- as.matrix(data.frame(
-##   sex_all = as.numeric(contigs.all%in%t.contigs.l[[1]]),
-##   eel_all = as.numeric(contigs.all%in%t.contigs.l[[2]]),
-##   pop_all = as.numeric(contigs.all%in%t.contigs.l[[3]])
-##   ))
-
-## library(limma)
-
-## devSVG(file="/home/ele/Dropbox/svg_work/venn.svg")
-## vennDiagram(bar)
-## dev.off()
-
-## ## venn.diagram(foo,
-## ## filename = "test.tiff")
-
-## ## ## male only
-
-## ## Me <- G.e[, sex.conds%in%"male"]
-
-## ## heatmap.4.contigs(Me[g.contigs.l[[2]], ])
-## ## heatmap.4.contigs(Me[g.contigs.l[[3]], ])
+pdf("/home/ele/thesis/experimental_infection/figures/eel_heat_trans.pdf")
+pheatmap(td$counts[t.test.l[[2]],], scale = "row" ,
+         annotation = sample.annot, show_rownames = FALSE)
+dev.off()
