@@ -1,14 +1,9 @@
 library(rtracklayer)
 library(biomaRt)
 
-if(!exists("good.Tax.transripts")){
-  source("basic/taxon_screen.R")
-}
-
 if(!exists("T.e")){
-  source("exp_test/edgeR.R")
+  source("src/3_edgeR.R")
 }
-
 
 gff <- import.gff3("/data/A_crassus/RNAseq/protein_prediction/best_candidates.eclipsed_orfs_removed.gff3",
                    asRangedData=FALSE)

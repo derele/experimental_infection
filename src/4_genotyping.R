@@ -4,10 +4,13 @@ library(adegenet)
 library(RSvgDevice)
 library(phangorn)
 library(ape)
+library(pegas)
 library(RSvgDevice)
+library(hierfstat)
+library(Rhh)
 
 if(!exists("T.e")){
-    source("exp_test/edgeR.R")
+    source("src/3_edgeR.R")
 }
 
 VCF <- read.delim("/data/A_crassus/RNAseq/genotypes_above30.vcf",
@@ -125,8 +128,6 @@ clust.ade <- find.clusters(GT.ade, n.clust = 2, n.pca = 5)
 
 clust.4.ade <- find.clusters(GT.ade, n.clust = 4, n.pca = 7)
 
-clust.opt.ade <- find.clusters(GT.ade, stat = "BIC", n.pca = 7)
-
 dapc1 <- dapc(GT.ade, n.pca=5, n.da=1)
 
 devSVG("figures/geno_dapc_discr.svg")
@@ -181,11 +182,12 @@ GT.haplo.diff <- sapply(0:11, function (i){
                        rowSums(GT.haplo[, pop.conds%in%"TW"]) > i)
                       ,])})
 
-DAPC.frame <- dapc1$pca.loadings
+DAPC.frame <- as.data.frame(dapc1$pca.loadings)
 rownames(DAPC.frame) <- rownames(GT)
+DAPC.frame$dapc.var <- as.vector(dapc1$var.contr)
+
 
 ## Constructiong the full genind object for fst stats
-
 GT.for.genind <- apply(GT, 2, function (x)
                        gsub("^2$", "2/2", gsub("^1$", "1/2", gsub("^0$", "1/1", x)))
                        )
@@ -194,11 +196,9 @@ rownames(GT.for.genind) <- rownames(GT)
 
 ## "expensive" Fst calculations 
 if (!exists ("GT.ade.heavy") ) { 
-
     if( file.exists("/data/A_crassus/RNAseq/Fst.Rata")){
         load("/data/A_crassus/RNAseq/Fst.Rata")
     }
-
     else {
         GT.ade.heavy <- df2genind(t(GT.for.genind), ploidy=2, sep="/",
                                   pop=GT.ade@pop, ind.names=colnames(GT),
@@ -211,26 +211,58 @@ if (!exists ("GT.ade.heavy") ) {
         pair.matFst <- pairwise.fst(GT.ade.heavy[n.worms.preped==1, ],
                                     res.type="matrix", truenames=TRUE)
 
+        hierf.test.between <-
+            test.between(GT.ade.heavy[n.worms.preped==1,]@tab,
+                         GT.ade.heavy[n.worms.preped==1,]@pop,
+                         rand.unit=GT.ade.heavy[n.worms.preped==1,]@ind.names)
+        
         ## use Fst from pegas
         GT.loci <- as.loci(GT.ade.heavy[n.worms.preped==1,])
         fsttab <- Fst(GT.loci)
 
-        apply(fsttab, 2, mean, na.rm=TRUE)
-
-        save(GT.ade.heavy, FST, pair.matFst, fsttab, GT.loci, 
-             file = "/data/A_crassus/RNAseq/Fst.Rata")
-
-        library(Rhh)
-        het.table <- data.frame(ir(GT.ade.heavy@tab[n.worms.preped==1,]))
-        rownames(het.table) <- GT.ade.heavy[n.worms.preped==1,]@ind.names
-
-        het.table$hl <- hl(GT.ade.heavy@tab[n.worms.preped==1,])
-        het.table$sh <- sh(GT.ade.heavy@tab[n.worms.preped==1,])
-
-        ## expected heterozygosity again from adegenet
-        GP.ade.heavy <- genind2genpop(GT.ade.heavy)
+        GP.ade.heavy <- genind2genpop(GT.ade.heavy[n.worms.preped==1,])
         exp.het <- Hs(GP.ade.heavy, truenames=TRUE)
+        
+        save(GT.ade.heavy, FST, pair.matFst, fsttab, GT.loci, hierf.test.between,
+             GP.ade.heavy, exp.het,
+             file = "/data/A_crassus/RNAseq/Fst.Rata")
     }
 }
 
+apply(fsttab, 2, mean, na.rm=TRUE)
 
+hierf.test.between <-
+    test.between(GT.ade.heavy[n.worms.preped==1,1:300]@tab,
+                 GT.ade.heavy[n.worms.preped==1,1:300]@pop,
+                 rand.unit=GT.ade.heavy[n.worms.preped==1,1:300]@ind.names)
+
+hierf.test.within <-
+    test.within(GT.ade.heavy[n.worms.preped==1,1:300]@tab,
+                within = GT.ade.heavy[n.worms.preped==1,1:300]@pop,
+                test.lev = GT.ade.heavy[n.worms.preped==1,1:300]@ind.names)
+
+
+
+het.table <- data.frame(ir=ir(GT.ade.heavy@tab[n.worms.preped==1,]))
+rownames(het.table) <- GT.ade.heavy[n.worms.preped==1,]@ind.names
+het.table$hl <- hl(GT.ade.heavy@tab[n.worms.preped==1,])
+het.table$sh <- sh(GT.ade.heavy@tab[n.worms.preped==1,])
+
+het.table <- merge(per.sample.GT.sum[, c(1,2,3,4)],
+             het.table, by = 0)
+het.table$pop <- gsub("\\w+_(\\w)\\d+[F|M]", "\\1", het.table$Row.names)
+
+wilcox.test(het.table[het.table$pop%in%"R", "het.hom"],
+            het.table[het.table$pop%in%"T", "het.hom"], alternative = "less")
+
+wilcox.test(het.table[het.table$pop%in%"R", "ir"],
+            het.table[het.table$pop%in%"T", "ir"], alternative = "less")
+
+wilcox.test(het.table[het.table$pop%in%"R", "hl"],
+            het.table[het.table$pop%in%"T", "hl"], alternative = "less")
+
+wilcox.test(het.table[het.table$pop%in%"R", "sh"],
+            het.table[het.table$pop%in%"T", "sh"], alternative = "greater")
+
+
+## expected heterozygosity again from adegenet

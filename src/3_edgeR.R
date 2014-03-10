@@ -2,7 +2,11 @@ library(edgeR)
 library(VennDiagram)
 library(pheatmap)
 library(RSvgDevice)
+library(randomForest)
 
+if(!exists("good.Tax.transripts")){
+  source("src/2_taxon_screen.R")
+}
 
 ## Reading the Rsem expression tables for genes
 G.exp <- read.delim("/data/A_crassus/RNAseq/rsem_trinity/Trinity_genes.counts.matrix.TMM_normalized.FPKM")
@@ -133,3 +137,37 @@ pdf("/home/ele/thesis/experimental_infection/figures/eel_heat_trans.pdf")
 pheatmap(td$counts[t.test.l[[2]],], scale = "row" ,
          annotation = sample.annot, show_rownames = FALSE)
 dev.off()
+
+
+## using random forrest to see if contrasts can be destinguished 
+
+
+library(randomForest)
+
+rFo.sex <- randomForest(x=t(T.e),
+                        sex.conds, subset = rownames(T.e)%in%colnames(td),
+                        ntree=1000 )
+
+rFo.eel <- randomForest(x=t(T.e),
+                        y=eel.conds, subset = t.test.l[[2]],
+                        ntree=1000)
+
+rFo.pop <- randomForest(x=t(T.e),
+                        y=pop.conds,
+                        ntree=1000)
+
+rFo.eel.pop <- randomForest(x=t(T.e),
+                            y=eel.conds:pop.conds,
+                            ntree=1000)
+
+rFo.all <- randomForest(x=t(T.e), 
+                        y=sex.conds:eel.conds:pop.conds,
+                        ntree=1000)
+
+sympa <- as.character(pop.conds:eel.conds)
+sympa <- as.factor(ifelse(sympa%in%c("EU:AA", "TW:AJ"),
+                          "sympa", "allopa"))
+
+rFo.sympa <- randomForest(x=t(T.e),
+                          y=sympa, subset = c(t.test.l[[3]], t.test.l[[2]]),
+                          ntree=1000)

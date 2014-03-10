@@ -53,6 +53,6 @@ TOGO.all.onto <- function (o, gN, gl, g2g) {
   toGO <-  new("topGOdata", ontology = o,
                allGenes = g, annot = annFUN.gene2GO,
                gene2GO = g2g)
-  resultFis <- runTest(toGO, algorithm = "classic", statistic = "fisher")
+  resultFis <- runTest(toGO, algorithm = "elim", statistic = "fisher")
   list(toGO, resultFis) ## returns a list first data then result
 }

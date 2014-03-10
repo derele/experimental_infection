@@ -1,7 +1,7 @@
-source("functions.R")
+source("src/1_functions.R")
 
 if(!exists("VCF")){
-    source("./SNPs/genotyping.R")
+    source("src/4_genotyping.R")
 }
 
 ## ## BASE ONTOLOGY
@@ -273,6 +273,24 @@ summary.factor(nchar(cds.1.gff.df$transcript)==
 VCF$SNP <- rownames(VCF)
 VAR <- merge(cds.1.gff.df, VCF, by.x = "seqnames", by.y = "V1")
 
+transversion.transition <- function (from, to){
+  get.trans <- function (x) {
+    trans <- summary(as.factor(from):as.factor(to))
+    trans <- trans[trans!=0]
+  }
+  transf <- get.trans(VARobj)
+  get.vers <- function (x){
+    transitions <- c("A:G", "G:A", "C:T", "T:C")
+    sition <- sum(x[names(x)%in%transitions])
+    version <- sum(x[!names(x)%in%transitions])
+    res <- cbind(transitions=sition, transversions=version, ratioTS.TV=sition/version)
+    return(as.data.frame(res))
+  }
+  get.vers(transf)
+}
+
+transversion.transition(VAR$V4, VAR$V5)
+
 get.effect <- function (ontology, base, to, strand){
     if(strand%in%"-"){
         to <- revcom(to)
@@ -337,8 +355,10 @@ contig.dn.ds <- by(VAR, as.character(VAR$seqnames), get.dn.ds)
 contig.dn.ds[is.infinite(contig.dn.ds)] <- 4
 contig.dn.ds[is.na(contig.dn.ds)] <- 0
 
-pos.selected <- (names(contig.dn.ds[contig.dn.ds>0.5 &
-                                    contig.dn.ds<5]))
+pos.selected <- names(contig.dn.ds[contig.dn.ds>0.3 &
+                                      contig.dn.ds<5])
+
+contig.dn.ds <- cbind(contig.dn.ds)
 
 ## SNPs unique to a population are producing higher dn/ds
 by(VAR, as.factor(as.character(VAR$SNP)%in%rownames(GT.haplo.diff)):
@@ -352,10 +372,23 @@ sapply(1:11, function (i) {
     get.dn.ds(VAR[VAR$SNP%in%GT.haplo.diff[[i]], ])
 })
 
-
 PCA.loadings <- pca1$loadings
 rownames(PCA.loadings) <- locNames(GT.ade)
 
 VAR$SNP <- gsub("\\.", "_" , VAR$SNP)
 
-VAR <- merge(VAR, PCA.loadings, by.x = "SNP", by.y = 0)
+VAR <- merge(VAR, DAPC.frame, by.x = "SNP", by.y = 0)
+
+fsttab <- as.data.frame(fsttab)
+VAR <- merge(VAR, fsttab, by.x = "SNP", by.y = 0)
+
+## SNPs per 1000 bases 
+(nrow(VAR)/sum(nchar(unique(VAR$transcript))))*1000
+
+## nsyn SNPs per 1000 bases 
+(nrow(VAR[VAR$effect%in%c("Nonsense", "Nonsynonymous"), ])/
+ sum(VAR[!duplicated(VAR$seqnames), "nsyn.sites"]))*1000
+
+## syn SNPs per 1000 bases
+(nrow(VAR[VAR$effect%in%c("Synonymous"), ])/
+ sum(VAR[!duplicated(VAR$seqnames), "syn.sites"]))*1000
