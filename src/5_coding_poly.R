@@ -354,10 +354,6 @@ contig.dn.ds <- by(VAR, as.character(VAR$seqnames), get.dn.ds)
 
 contig.dn.ds[is.infinite(contig.dn.ds)] <- 4
 contig.dn.ds[is.na(contig.dn.ds)] <- 0
-
-pos.selected <- names(contig.dn.ds[contig.dn.ds>0.3 &
-                                      contig.dn.ds<5])
-
 contig.dn.ds <- cbind(contig.dn.ds)
 
 ## SNPs unique to a population are producing higher dn/ds

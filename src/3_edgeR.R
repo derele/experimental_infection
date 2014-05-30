@@ -27,6 +27,9 @@ T.e <- round(T.exp)
 T.e <- T.e[rowSums(T.e)>100, ]
 T.e <- T.e[rownames(T.e)%in%good.Tax.transripts,]
 
+## to keep a record of what transcripts are in the analysis
+# writeLines(rownames(T.e), "/data/A_crassus/RNAseq/Trinity/analysed_transcripts.txt")
+
 ## building the design matrix
 sex.conds <- factor(ifelse(grepl("M$", names(G.exp)), "male", "female" ))
 eel.conds <- factor(ifelse(grepl("^AA", names(G.exp)), "AA", "AJ" ))
@@ -48,17 +51,11 @@ devSVG("figures/mds_genes.svg")
 plotMDS.DGEList(ed, top=500)
 dev.off()
 
-if(!file.exists("figures/heatmap_genes.svg")){
-    devSVG("figures/heatmap_genes.svg")
-    pheatmap(ed$counts, scale="row", show_rownames = FALSE,
-             annotation = sample.annot)
-    dev.off()
-}
-
 if(!file.exists("figures/heatmap_genes.pdf")){
     pdf("figures/heatmap_genes.pdf")
     pheatmap(ed$counts, scale="row", show_rownames = FALSE,
-             annotation = sample.annot)
+             annotation = sample.annot,
+             )
     dev.off()
 }
 
@@ -139,9 +136,16 @@ pheatmap(td$counts[t.test.l[[2]],], scale = "row" ,
 dev.off()
 
 
+devSVG("figures/mds_trans_eel.svg")
+plotMDS.DGEList(td[t.test.l[[2]],])
+dev.off()
+
+devSVG("figures/mds_trans_pop.svg")
+plotMDS.DGEList(td[t.test.l[[3]],])
+dev.off()
+
+
 ## using random forrest to see if contrasts can be destinguished 
-
-
 library(randomForest)
 
 rFo.sex <- randomForest(x=t(T.e),

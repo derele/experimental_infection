@@ -126,7 +126,11 @@ dev.off()
 ## cluster finding 
 clust.ade <- find.clusters(GT.ade, n.clust = 2, n.pca = 5)
 
-clust.4.ade <- find.clusters(GT.ade, n.clust = 4, n.pca = 7)
+clust.4.ade <- find.clusters(GT.ade, n.clust = 4, n.pca = 5)
+
+clust.4.ade <- find.clusters(GT.ade, choose.n.clust=FALSE, n.pca = 5, criterion = "min",
+                             max.n.clust=4)
+
 
 dapc1 <- dapc(GT.ade, n.pca=5, n.da=1)
 
@@ -136,7 +140,7 @@ scatter(dapc1, scree.da=FALSE,
         posi.pca="topright",
         legend=TRUE,
         txt.leg=levels(dapc1$grp),
-        col=c("red","blue"))
+        col=c("green","purple"))
 dev.off()
 
 
@@ -169,8 +173,14 @@ GT.gene.list <- by(GT.gene, GT.gene$gene, function (x) {
     apply(x[, 1:24], 2, paste, collapse=".")})
 GT.gene <- as.data.frame(do.call(rbind, GT.gene.list))
 
-devSVG("figures/geno_most_224_heat.svg")
-pheatmap(GT[dapc1$pca.loadings[,1]>0.01,])
+devSVG("figures/geno_dapc_high_heat.svg")
+pheatmap(GT[dapc1$var.contr>0.00008,],
+         annotation = sample.annot, show_rownames = FALSE)
+dev.off()
+
+pdf("figures/geno_dapc_high_heat.pdf")
+pheatmap(GT[dapc1$var.contr>0.00008,],
+         annotation = sample.annot, show_rownames = FALSE)
 dev.off()
 
 GT.haplo <- GT>0
@@ -264,5 +274,9 @@ wilcox.test(het.table[het.table$pop%in%"R", "hl"],
 wilcox.test(het.table[het.table$pop%in%"R", "sh"],
             het.table[het.table$pop%in%"T", "sh"], alternative = "greater")
 
+
+library(xtable)
+print(xtable(het.table[order(het.table$pop), ]),
+      type="html", file="/home/ele/Dropbox/Ac_trans_div/tables/Table2.html")
 
 ## expected heterozygosity again from adegenet

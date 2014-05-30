@@ -48,49 +48,73 @@ CC.pop <- TOGO.all.onto("CC", names(transcript.2.GO),
                          t.test.l[[3]], transcript.2.GO)
 GenTable(CC.pop[[1]], CC.pop[[2]])
 
-
+################################################
+## appropriate gene-set for genotyping
+geno.universe <- names(transcript.2.GO)[names(transcript.2.GO)%in%VCF$V1]
+geno.ipr.universe <- unique(IPR$transcript[IPR$transcript%in%VCF$V1])
 #######################################################
 ## This dapc stuff did not identify anything exciting
-quite.sep.genes <-  rownames(GT[dapc1$var.contr[,1]>0.0001,])
+
+quite.sep.genes <-  rownames(GT[dapc1$var.contr[,1]>0.00008,])
 quite.sep.genes <- unique(gsub("_\\d+:.*", "", quite.sep.genes))
 
-MF.seperate <- TOGO.all.onto("MF", names(transcript.2.GO), 
+MF.seperate <- TOGO.all.onto("MF", geno.universe, 
                              quite.sep.genes , transcript.2.GO)
 GenTable(MF.seperate[[1]], MF.seperate[[2]])
 
-BP.seperate <- TOGO.all.onto("BP", names(transcript.2.GO), 
+BP.seperate <- TOGO.all.onto("BP", geno.universe, 
                         quite.sep.genes , transcript.2.GO)
-
 GenTable(BP.seperate[[1]], BP.seperate[[2]])
 
-CC.seperate <- TOGO.all.onto("CC", names(transcript.2.GO), 
+CC.seperate <- TOGO.all.onto("CC", geno.universe, 
                         quite.sep.genes , transcript.2.GO)
-
 GenTable(CC.seperate[[1]], CC.seperate[[2]])
 
-#######################################################
-## dn/ds as such identified also nothing STRANGE FIXME!!! 
-MF.pos.selected <- TOGO.all.onto("MF", names(transcript.2.GO), 
-                                 pos.selected , transcript.2.GO)
+## fisher.test(IPR.omcl%in%TM.genes, IPR.omcl%in%Coccidia.genes)
 
+### Enrichment of signal sequences in seperating genes: 
+fisher.test(geno.ipr.universe%in%SS.trans,
+            geno.ipr.universe%in%quite.sep.genes)
+
+table(geno.ipr.universe%in%SS.trans,
+      geno.ipr.universe%in%quite.sep.genes)
+
+## endopeptidases
+genesInTerm(MF.seperate[[1]],"GO:0008238")
+
+
+
+#######################################################
+## dn/ds 
+pos.selected <- names(
+    contig.dn.ds[contig.dn.ds[,1]>0.5, ])
+
+MF.pos.selected <- TOGO.all.onto("MF", geno.universe, 
+                                 pos.selected , transcript.2.GO)
 GenTable(MF.pos.selected[[1]], MF.pos.selected[[2]])
 
-
-BP.pos.selected <- TOGO.all.onto("BP", names(transcript.2.GO), 
+BP.pos.selected <- TOGO.all.onto("BP", geno.universe, 
                                  pos.selected , transcript.2.GO)
-
 GenTable(BP.pos.selected[[1]], BP.pos.selected[[2]])
 
-
-CC.pos.selected <- TOGO.all.onto("CC", names(transcript.2.GO), 
+CC.pos.selected <- TOGO.all.onto("CC", geno.universe, 
                                  pos.selected , transcript.2.GO)
-
 GenTable(CC.pos.selected[[1]], CC.pos.selected[[2]])
+
+### Enrichment of signal sequences in pos selected genes: 
+fisher.test(geno.ipr.universe%in%SS.trans,
+            geno.ipr.universe%in%pos.selected)
+
+table(geno.ipr.universe%in%SS.trans,
+      geno.ipr.universe%in%pos.selected)
+
+## Not significant!!!
+
 #############################################################
 
 
 pdf("figures/fst.dapc.pdf")
-ggplot(VAR, aes(x=Fst, y=dapc.var)) + geom_point(alpha = 0.1) + geom_density2d()
+smoothScatter(VAR$Fst, sqrt(VAR$dapc.var))
 dev.off()
 
 pdf("figures/fst.ax1.pdf")
@@ -117,6 +141,13 @@ ggplot(subset(VARsum, (!is.na(effect) & !effect%in%"Nonsense") &
     scale_x_log10(breaks=1/10^(1:5))
 dev.off()
 
+### Significant shift towards bigger values of Fst for the neutral substitutions
+wilcox.test(VAR[VAR$effect%in%c("outside ORF", "Synonymous"), "Fst"],
+            VAR[VAR$effect%in%c("Nonsynonymous", "Nonsense"), "Fst"])
+
+wilcox.test(VAR[VAR$effect%in%c("outside ORF", "Synonymous"), "Fis"],
+            VAR[VAR$effect%in%c("Nonsynonymous", "Nonsense"), "Fis"])
+
 devSVG("figures/dapc_axis_dens.svg", width=14, height=7)
 ggplot(subset(VARsum, (!is.na(effect) & !effect%in%"Nonsense") &
               variable%in%c("dapc.var", "Axis1")),
@@ -126,6 +157,13 @@ ggplot(subset(VARsum, (!is.na(effect) & !effect%in%"Nonsense") &
     theme_bw() +
     scale_x_log10()
 dev.off()
+
+### Significant shift towards bigger values of Fst for the neutral substitutions
+wilcox.test(VAR[VAR$effect%in%c("outside ORF", "Synonymous"), "dapc.var"],
+            VAR[VAR$effect%in%c("Nonsynonymous", "Nonsense"), "dapc.var"])
+
+wilcox.test(VAR[VAR$effect%in%c("outside ORF", "Synonymous"), "Axis1"],
+            VAR[VAR$effect%in%c("Nonsynonymous", "Nonsense"), "Axis1"])
 
 contig.geno <- cbind(mean.dapc=tapply(VAR$dapc.var,
                          as.character(VAR$seqnames),
@@ -152,16 +190,33 @@ contig.geno <- cbind(contig.geno,
                      Fis.mean=tapply(VAR$Fis,
                          as.character(VAR$seqnames), mean, na.rm=TRUE))
 
+contig.geno <- cbind(contig.geno,
+                     n.SNPs=tapply(VAR$Fis,
+                         as.character(VAR$seqnames), length))
+
 contig.geno <- merge(contig.geno, contig.dn.ds, by = 0)
+
+### Significant positive correlation of  max Fst and dapc with dn.ds ??????
+cor.test(sqrt(contig.geno$mean.dapc), contig.geno$contig.dn.ds, method="kendall")
+cor.test(sqrt(contig.geno$max.dapc), contig.geno$contig.dn.ds, method="kendall")
+
+cor.test(contig.geno$Fst.mean, contig.geno$contig.dn.ds, method="kendall")
+cor.test(contig.geno$Fst.max, contig.geno$contig.dn.ds, method="kendall")
+### This is somewhat contradictory to the effect of individual loci. I
+### omit it in the paper
 
 pdf("figures/dapc.mean.dn.ds.pdf")
 ggplot(contig.geno, aes(x=mean.dapc, y=contig.dn.ds)) +
     geom_point(alpha = 0.1) + geom_density2d()
 dev.off()
 
-pdf("figures/dapc.max.dn.ds.pdf")
+devSVG("figures/dapc.max.dn.ds.svg")
 ggplot(contig.geno, aes(x=max.dapc, y=contig.dn.ds)) +
-    geom_point(alpha = 0.1) + geom_density2d()
+    geom_point(alpha = 0.1) +
+    geom_density2d() +
+    theme_bw() +
+    geom_hline(yintercept=0.5, color = "red") +
+    geom_vline(xintercept=0.00008, color = "green")
 dev.off()
 
 pdf("figures/Fst.mean.dn.ds.pdf")
@@ -184,20 +239,27 @@ ggplot(contig.geno, aes(x=Fis.max, y=contig.dn.ds)) +
     geom_point(alpha = 0.1) + geom_density2d()
 dev.off()
 
-
+######## combined selection based on differenciation and pos selection
 double.interesting <- contig.geno[contig.geno$max.dapc > 0.00008 &
                                   contig.geno$contig.dn.ds > 0.5, "Row.names"]
 
-MF.seperate <- TOGO.all.onto("MF", names(transcript.2.GO), 
+MF.double <- TOGO.all.onto("MF", geno.universe, 
                              double.interesting , transcript.2.GO)
-GenTable(MF.seperate[[1]], MF.seperate[[2]])
+GenTable(MF.double[[1]], MF.double[[2]])
 
-BP.seperate <- TOGO.all.onto("BP", names(transcript.2.GO), 
+BP.double <- TOGO.all.onto("BP", geno.universe, 
                         double.interesting , transcript.2.GO)
+GenTable(BP.double[[1]], BP.double[[2]])
 
-GenTable(BP.seperate[[1]], BP.seperate[[2]])
-
-CC.seperate <- TOGO.all.onto("CC", names(transcript.2.GO), 
+CC.double <- TOGO.all.onto("CC", geno.universe, 
                         double.interesting , transcript.2.GO)
+GenTable(CC.double[[1]], CC.double[[2]])
 
-GenTable(CC.seperate[[1]], CC.seperate[[2]])
+fisher.test(geno.ipr.universe%in%SS.trans,
+            geno.ipr.universe%in%double.interesting)
+
+table(geno.ipr.universe%in%SS.trans,
+      geno.ipr.universe%in%double.interesting)
+
+## NS!!
+

@@ -141,3 +141,15 @@ transcript.2.GO <- by(GO.df.transcript, GO.df.transcript$transcript,
 
 ## GO.2.transcript <- by(GO.df.transcript, GO.df.transcript$go,
 ##                 function (x) c(as.character(x$gene)))
+
+
+## SignalP via iprscan
+SS.genes <- unique(IPR[IPR$V4%in%"SignalP_EUK" & IPR$V5%in%"SignalP-noTM", "gene"])
+TM.genes <- unique(IPR[IPR$V4%in%"SignalP_EUK" & IPR$V5%in%"SignalP-TM", "gene"])
+
+SS.trans <- unique(IPR[IPR$V4%in%"SignalP_EUK" & IPR$V5%in%"SignalP-noTM", "transcript"])
+TM.trans <- unique(IPR[IPR$V4%in%"SignalP_EUK" & IPR$V5%in%"SignalP-TM", "transcript"])
+
+TMHMM.genes <- unique(IPR[IPR$V4%in%"TMHMM", "gene"])
+TMHMM.trans <- unique(IPR[IPR$V4%in%"TMHMM", "transcript"])
+
